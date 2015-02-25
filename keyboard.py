@@ -6,7 +6,7 @@ from pygame.locals import *
 from sunquest import *
 
 from string import maketrans
-Uppercase = maketrans("1234567890",
+Uppercase = maketrans("7894561230",
                       'SMTWHF-X--')
 
 DEBUG = False
@@ -208,7 +208,7 @@ class VirtualKeyboard():
         x = self.x + 1
         y = self.y + self.textH  # + self.keyH / 4
 
-        row = ['1', '2', '3']
+        row = ['7', '8', '9']
         for item in row:
             onekey = VKey(
                 item,
@@ -255,7 +255,7 @@ class VirtualKeyboard():
         y += self.keyH
         x = self.x + 1
 
-        row = ['7', '8', '9']
+        row = ['1', '2', '3']
         for item in row:
             onekey = VKey(
                 item,
@@ -322,10 +322,11 @@ class VirtualKeyboard():
         pygame.display.update()
 
     def clear(self):
+        pass
         ''' Put the screen back to before we started '''
         # self.screen.blit(self.background, (0, 0))
         # pygame.display.get_surface().flip()
-        pygame.display.update()
+        # pygame.display.update()
 
 # ----------------------------------------------------------------------------
 
