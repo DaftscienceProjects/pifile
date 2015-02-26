@@ -8,7 +8,7 @@ from pprint import pprint
 class tiny_db():
 
     def __init__(self):
-        self.db = TinyDB(DATABASE_SETTINGS['database'])
+        self.db = TinyDB(DATABASE_SETTINGS['database'], smart_cache=True)
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
         self.get_last_filed()
@@ -163,6 +163,8 @@ if __name__ == '__main__':
     # print RACK_DB.next_row
     # print RACK_DB.next_column
     # print RACK_DB.next_rack
+    RACK_DB.find_accn('050065740')
+    RACK_DB.find_accn('050065740')
     RACK_DB.find_accn('050065740')
     RACK_DB.new_find_accn('050065740')
     # RACK_DB.list_all()
