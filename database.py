@@ -144,8 +144,9 @@ if __name__ == '__main__':
 
     # rack_db.find_accn(8)
     # rack_db.list_all()
-    print RACK_DB.next_row
-    print RACK_DB.next_column
-    print RACK_DB.next_rack
+    # print RACK_DB.next_row
+    # print RACK_DB.next_column
+    # print RACK_DB.next_rack
+    RACK_DB.list_all()
 
     # rack_db.next_location()
