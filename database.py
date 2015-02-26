@@ -52,7 +52,7 @@ class tiny_db():
         self.next['rackDay'] = today
 
     def next_location(self):
-        print "running next location"
+        # print "running next location"
         today = strftime('%a', localtime(time()))
         # print today
         if self.last_filed is None:
@@ -118,12 +118,14 @@ class tiny_db():
         twoDaysAgo = int(
             mktime(
                 (datetime.date.today() - datetime.timedelta(2)).timetuple()))
-
+        print "found the date of two days ago"
         # So this will check for accn and compare time
         # Returning only values that after two days ago
+        print "starting search"
         result = self.db.search(
             (where('accn') == accn) & (
                 where('time') > twoDaysAgo))
+        print "finished search"
         pprint(result)
         return result
 
