@@ -52,6 +52,7 @@ class tiny_db():
         self.next['rackDay'] = today
 
     def next_location(self):
+        print "running next location"
         today = strftime('%a', localtime(time()))
         # print today
         if self.last_filed is None:
@@ -123,7 +124,7 @@ class tiny_db():
         result = self.db.search(
             (where('accn') == accn) & (
                 where('time') > twoDaysAgo))
-        # pprint(result)
+        pprint(result)
         return result
 
     def list_all(self):
