@@ -402,6 +402,8 @@ displayLoadingScreen(screenindex)
 while not quit:
     for event in pygame.event.get():
         # Handle quit message received
+	if event.type == pygame.KEYDOWN and event.type == pygame.K_q:
+		quit = True
         if event.type == pygame.QUIT:
             quit = True
         # if event.type == TIME_CHANGED:
