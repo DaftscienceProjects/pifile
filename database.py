@@ -167,19 +167,19 @@ if __name__ == '__main__':
     start = localtime()
     RACK_DB.find_accn('050065740')
     stamp = localtime()
-    delta = start - stamp()
+    delta = start - stamp
     pprint(delta)
     
     start = localtime()
     RACK_DB.find_accn('050065740')
     stamp = localtime()
-    delta = start - stamp()
+    delta = start - stamp
     pprint(delta)
     
     start = localtime()
     RACK_DB.find_accn('050065740')
     stamp = localtime()
-    delta = start - stamp()
+    delta = start - stamp
     pprint(delta)
     # RACK_DB.list_all()
 
