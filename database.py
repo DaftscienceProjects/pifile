@@ -128,6 +128,21 @@ class tiny_db():
         print "finished search"
         pprint(result)
         return result
+        
+    def new_find_accn(self, accn):
+        print "looking for: " + str(accn)
+        # testTime = 1422225306.907
+        twoDaysAgo = int(
+            mktime(
+                (datetime.date.today() - datetime.timedelta(2)).timetuple()))
+        print "found the date of two days ago"
+        # So this will check for accn and compare time
+        # Returning only values that after two days ago
+        print "starting search"
+        result = self.db.search((where('accn') == accn) & (where('time') > twoDaysAgo))
+        print "finished search"
+        pprint(result)
+        return result
 
     def list_all(self):
         for item in self.db.all():
@@ -147,6 +162,7 @@ if __name__ == '__main__':
     # print RACK_DB.next_row
     # print RACK_DB.next_column
     # print RACK_DB.next_rack
-    RACK_DB.list_all()
+    RACK_DB.FIND_ACCN('050065740')
+    # RACK_DB.list_all()
 
     # rack_db.next_location()
