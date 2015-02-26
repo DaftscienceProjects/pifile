@@ -139,7 +139,8 @@ class tiny_db():
         # So this will check for accn and compare time
         # Returning only values that after two days ago
         print "starting search"
-        result = self.db.search((where('accn') == accn) & (where('time') > twoDaysAgo))
+        # result = self.db.search((where('accn') == accn) & (where('time') > twoDaysAgo))
+        result = self.db.search((where('accn') == accn))
         print "finished search"
         pprint(result)
         return result
