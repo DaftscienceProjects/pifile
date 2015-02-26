@@ -162,7 +162,8 @@ if __name__ == '__main__':
     # print RACK_DB.next_row
     # print RACK_DB.next_column
     # print RACK_DB.next_rack
-    RACK_DB.FIND_ACCN('050065740')
+    RACK_DB.find_accn('050065740')
+    RACK_DB.new_find_accn('050065740')
     # RACK_DB.list_all()
 
     # rack_db.next_location()
