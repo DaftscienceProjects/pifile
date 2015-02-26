@@ -8,13 +8,14 @@ from pprint import pprint
 class tiny_db():
 
     def __init__(self):
-        self.db = TinyDB(DATABASE_SETTINGS['database'], smart_cache=True)
+        self.db = TinyDB(DATABASE_SETTINGS['database'])
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
         self.get_last_filed()
         self.rack_day = None
         self.next={}
         self.next_location()
+        # self.table = self.db.table('table_name')
 
     def file_accn(self, accn):
         insert = {
