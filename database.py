@@ -154,7 +154,7 @@ RACK_DB = tiny_db()
 
 
 if __name__ == '__main__':
-
+    import timeit
     # for x in xrange(100):
         # print x
         # RACK_DB.file_accn(x)
@@ -164,23 +164,13 @@ if __name__ == '__main__':
     # print RACK_DB.next_row
     # print RACK_DB.next_column
     # print RACK_DB.next_rack
+
     start = localtime()
-    RACK_DB.find_accn('050065740')
+    timeit.timeit(RACK_DB.find_accn('050065740'))
     stamp = localtime()
     delta = start - stamp
     pprint(delta)
-    
-    start = localtime()
-    RACK_DB.find_accn('050065740')
-    stamp = localtime()
-    delta = start - stamp
-    pprint(delta)
-    
-    start = localtime()
-    RACK_DB.find_accn('050065740')
-    stamp = localtime()
-    delta = start - stamp
-    pprint(delta)
+
     # RACK_DB.list_all()
 
     # rack_db.next_location()
