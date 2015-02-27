@@ -15,6 +15,7 @@ class tiny_db():
         self.rack_day = None
         self.next={}
         self.next_location()
+        self.mem_db = 
         # self.table = self.db.table('table_name')
 
     def file_accn(self, accn):
@@ -30,6 +31,7 @@ class tiny_db():
         # 	First it inserts he item, and returns an eid
         # 	that eid is used to then get what it just inserted.
         # 	then that dict is put into last filed
+        self.mem_db.append(item)
         self.last_filed = self.db.get(eid=self.db.insert(insert))
         self.next_location()
 
@@ -141,15 +143,23 @@ class tiny_db():
         # Returning only values that after two days ago
         print "starting search"
         # result = self.db.search((where('accn') == accn) & (where('time') > twoDaysAgo))
-        result = self.db.search((where('accn') == accn))
+        result = []
+        for item in self.mem_db:
+            if item['accn'] == accn:
+                result.append(item)
+        
+        # result = self.db.search((where('accn') == accn))
         print "finished search"
         pprint(result)
         return result
 
     def list_all(self):
+        self.mem_db = []
         for item in self.db.all():
+            self.mem_db.append(item)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])
-
+        return self.mem_db
+        
 RACK_DB = tiny_db()
 
 
@@ -165,11 +175,12 @@ if __name__ == '__main__':
     # print RACK_DB.next_column
     # print RACK_DB.next_rack
 
-    start = localtime()
-    timeit.timeit(RACK_DB.find_accn('050065740'))
-    stamp = localtime()
-    delta = start - stamp
-    pprint(delta)
+    # start = localtime()
+    RACK_DB.find_accn('050065740')
+    RACK_DB.new_find_accn('050065740')
+    # stamp = localtime()
+    # delta = start - stamp
+    # pprint(delta)
 
     # RACK_DB.list_all()
 
