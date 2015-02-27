@@ -15,7 +15,7 @@ class tiny_db():
         self.rack_day = None
         self.next={}
         self.next_location()
-        self.mem_db = 
+        self.list_all()
         # self.table = self.db.table('table_name')
 
     def file_accn(self, accn):
