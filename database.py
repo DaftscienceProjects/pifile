@@ -15,6 +15,7 @@ class tiny_db():
         self.rack_day = None
         self.next={}
         self.next_location()
+        self.mem_db = []
         self.list_all()
         # self.table = self.db.table('table_name')
 
@@ -31,7 +32,7 @@ class tiny_db():
         # 	First it inserts he item, and returns an eid
         # 	that eid is used to then get what it just inserted.
         # 	then that dict is put into last filed
-        #self.mem_db.append(item)
+        self.mem_db.append(item)
         self.last_filed = self.db.get(eid=self.db.insert(insert))
         self.next_location()
 
@@ -154,7 +155,6 @@ class tiny_db():
         return result
 
     def list_all(self):
-        self.mem_db = []
         for item in self.db.all():
             self.mem_db.append(item)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])
