@@ -116,7 +116,7 @@ class tiny_db():
         print self.next_rack
         print self.rack_day
 
-    def find_accn(self, accn):
+    def old_find_accn(self, accn):
         print "looking for: " + str(accn)
         # testTime = 1422225306.907
         twoDaysAgo = int(
@@ -133,7 +133,7 @@ class tiny_db():
         pprint(result)
         return result
         
-    def new_find_accn(self, accn):
+    def find_accn(self, accn):
         print "looking for: " + str(accn)
         # testTime = 1422225306.907
         twoDaysAgo = int(
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
     # start = localtime()
     RACK_DB.find_accn('050065740')
-    RACK_DB.new_find_accn('050065740')
+    # RACK_DB.new_find_accn('050065740')
     # stamp = localtime()
     # delta = start - stamp
     # pprint(delta)
