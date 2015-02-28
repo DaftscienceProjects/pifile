@@ -26,14 +26,12 @@ class myScreen(PiInfoScreen):
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
         
-        stop this from running
-        
         self.setting_visible = False
         self.clock_dirty = False
         self.minus = ICONS.unicode('down-open')
         self.plus = ICONS.unicode('up-open')
         self.surface.fill(COLORS['CLOUD'])
-        self.hint_text.string = "Swipe up for settings\n Swipe horizontally to exit"
+        self.hint_text.string = "settings are disabled"
         self.title.update()
         self.adjust_time = change_time()
 # pygame.font.Font(ICONS.font_location, 45)
@@ -191,8 +189,9 @@ class myScreen(PiInfoScreen):
         # print('running callback 2')
 
     def event_handler(self, event):
+        return
         if event.type == SWIPE_UP and self.setting_visible == False:
-            self.setting_visible = True
+            # self.setting_visible = True
             return
         if event.type == SWIPE_DOWN:
             self.setting_visible = False
