@@ -25,6 +25,9 @@ class myScreen(PiInfoScreen):
 
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
+        
+        stop this from running
+        
         self.setting_visible = False
         self.clock_dirty = False
         self.minus = ICONS.unicode('down-open')
