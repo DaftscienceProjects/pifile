@@ -474,7 +474,7 @@ while not quit:
         # clock = pygame.time.Clock()
         # CLOCK_DIRTY = False
     pygame.display.flip()
-    pygame.time.Clock()
+    clock.tick(FPS)
 
 # If we're here we've exited the display loop...
 log("Exiting...")
