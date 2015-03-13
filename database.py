@@ -138,7 +138,7 @@ class tiny_db():
                 (datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.mem_db:
             if item['time'] > twoDaysAgo:
-                print "still valid " +str(item['time'])
+                print "still valid " + str(item['accn'])+ " "+str(item['time'])
             else:
                 print "old " + str(item['time'])
             
