@@ -169,7 +169,7 @@ class tiny_db():
         for item in self.db.all():
             print item.eid
             if item['time'] < twoDaysAgo:
-                self.db.remove(item.eid)
+                self.db.remove(eids=[item.eid])
             else:
                 self.mem_db.append(item)
             # print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
