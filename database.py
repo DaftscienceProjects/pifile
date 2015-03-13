@@ -137,10 +137,10 @@ class tiny_db():
             mktime(
                 (datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.mem_db:
-            if item['date'] > twoDaysAgo:
-                print "still valid " +item['date']
+            if item['time'] > twoDaysAgo:
+                print "still valid " +item['time']
             else:
-                print "old " + item['date']
+                print "old " + item['time']
             
         
     def find_accn(self, accn):
@@ -167,7 +167,7 @@ class tiny_db():
     def list_all(self):
         for item in self.db.all():
             self.mem_db.append(item)
-            print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['date'])
+            print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         return self.mem_db
         
 RACK_DB = tiny_db()
