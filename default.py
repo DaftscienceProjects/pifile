@@ -44,7 +44,7 @@ if RASPBERRYPI:
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
-FPS = 15
+FPS = 10
 clock = pygame.time.Clock()
 screenindex = 0
 
@@ -473,8 +473,9 @@ while not quit:
     # if CLOCK_DIRTY == True:
         # clock = pygame.time.Clock()
         # CLOCK_DIRTY = False
-    pygame.display.flip()
+    
     clock.tick(FPS)
+    pygame.display.flip()
 
 # If we're here we've exited the display loop...
 log("Exiting...")
