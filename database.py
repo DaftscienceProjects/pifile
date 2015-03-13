@@ -187,6 +187,7 @@ if __name__ == '__main__':
 
     # start = localtime()
     RACK_DB.find_accn('050065740')
+    RACK_DB.purge_old()
     # RACK_DB.new_find_accn('050065740')
     # stamp = localtime()
     # delta = start - stamp
