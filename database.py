@@ -168,7 +168,10 @@ class tiny_db():
         twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.db.all():
             print item.eid
-            self.mem_db.append(item)
+            if item[time] < twoDaysAgo:
+                self.db.remove(item.eid)
+            else:
+                self.mem_db.append(item)
             # print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         return self.mem_db
         
