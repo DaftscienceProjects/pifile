@@ -11,12 +11,16 @@ class tiny_db():
         self.db = TinyDB(DATABASE_SETTINGS['database'])
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
+        
+        self.mem_db = []
+        self.list_all()
+        
         self.get_last_filed()
         self.rack_day = None
         self.next={}
         self.next_location()
-        self.mem_db = []
-        self.list_all()
+        
+        
         # self.table = self.db.table('table_name')
 
     def file_accn(self, accn):
