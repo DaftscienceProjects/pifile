@@ -136,14 +136,18 @@ class tiny_db():
         pprint(result)
         return result
     def purge_old(self):
-        twoDaysAgo = int(
-            mktime(
-                (datetime.date.today() - datetime.timedelta(2)).timetuple()))
-        for item in self.mem_db:
-            if item['time'] > twoDaysAgo:
-                print "still valid " + str(item['accn'])+ " "+str(item['time'])
+        purge = []
+        twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
+        for item in self.db.all():
+            print item.eid
+            if item['time'] < twoDaysAgo:
+                purge.append(item.eid)
             else:
-                print "old " + str(item['time'])
+                self.mem_db.append(item)
+            print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
+        self.db.remove(eids=purge)
+        self.last_filed = db.get(eid=max(purge))
+        return self.mem_db
             
         
     def find_accn(self, accn):
@@ -197,8 +201,8 @@ if __name__ == '__main__':
     # print RACK_DB.next_rack
 
     # start = localtime()
-    RACK_DB.find_accn('050065740')
-    # RACK_DB.purge_old()
+    # RACK_DB.find_accn('050065740')
+    RACK_DB.purge_old()
     # RACK_DB.new_find_accn('050065740')
     # stamp = localtime()
     # delta = start - stamp
