@@ -41,7 +41,8 @@ class tiny_db():
         print "starting to file accn"
         self.mem_db.append(insert)
         print "written to memory"
-        self.last_filed = self.db.get(eid=self.db.insert(insert))
+        self.db.insert(insert)
+        self.last_filed = insert
         print "written to disk"
         self.next_location()
         print "next location updated"
