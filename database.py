@@ -42,8 +42,9 @@ class tiny_db():
         self.mem_db.append(insert)
         print "written to memory"
         self.db.insert(insert)
-        self.last_filed = insert
         print "written to disk"
+        self.last_filed = insert
+        print "last filed updated"
         self.next_location()
         print "next location updated"
         print "======================="
