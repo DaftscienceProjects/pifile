@@ -145,6 +145,7 @@ class tiny_db():
         return result
     def purge_old(self):
         purge = []
+        keep = []
         twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.db.all():
             print item.eid
@@ -152,9 +153,10 @@ class tiny_db():
                 purge.append(item.eid)
             else:
                 self.mem_db.append(item)
+                keep.append(item.eid)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         self.db.remove(eids=purge)
-        self.last_filed = self.db.get(eid=max(purge))
+        self.last_filed = self.db.get(eid=max(keep))
         return self.mem_db
             
         
