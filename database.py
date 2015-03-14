@@ -19,6 +19,8 @@ class tiny_db():
         
         # self.tables = []
         # for item in self.db.tables():
+        #     self.tables.append(item)
+        
             
         
         self.rack_day = None
