@@ -12,6 +12,8 @@ class tiny_db():
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
         
+        self.get_last_filed()
+        
         self.mem_db = []
         self.list_all()
         
@@ -146,7 +148,7 @@ class tiny_db():
                 self.mem_db.append(item)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         self.db.remove(eids=purge)
-        self.last_filed = self.db.get(eid=max(purge))
+        # self.last_filed = self.db.get(eid=max(purge))
         return self.mem_db
             
         
@@ -182,7 +184,7 @@ class tiny_db():
                 self.mem_db.append(item)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         # self.db.remove(eids=purge)
-        self.last_filed = self.db.get(eid=max(purge))
+        # self.last_filed = self.db.get(eid=max(purge))
         return self.mem_db
         
 RACK_DB = tiny_db()
@@ -202,8 +204,8 @@ if __name__ == '__main__':
 
     # start = localtime()
     # RACK_DB.find_accn('050065740')
-    RACK_DB.purge_old()
-    RACK_DB.list_all()
+    # RACK_DB.purge_old()
+    # RACK_DB.list_all()
     # RACK_DB.new_find_accn('050065740')
     # stamp = localtime()
     # delta = start - stamp
