@@ -195,7 +195,7 @@ if __name__ == '__main__':
         # RACK_DB.file_accn(x)
 
     # rack_db.find_accn(8)
-    # rack_db.list_all()
+    
     # print RACK_DB.next_row
     # print RACK_DB.next_column
     # print RACK_DB.next_rack
@@ -203,6 +203,7 @@ if __name__ == '__main__':
     # start = localtime()
     # RACK_DB.find_accn('050065740')
     RACK_DB.purge_old()
+    RACK_DB.list_all()
     # RACK_DB.new_find_accn('050065740')
     # stamp = localtime()
     # delta = start - stamp
