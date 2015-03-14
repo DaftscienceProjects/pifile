@@ -152,13 +152,14 @@ class tiny_db():
         for item in self.db.all():
             print item.eid
             if item['time'] < twoDaysAgo:
+                print "removing: " + str(item['accn'])
                 purge.append(item.eid)
             else:
                 self.mem_db.append(item)
                 keep.append(item.eid)
-            print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
-        self.db.remove(eids=purge)
-        self.last_filed = self.db.get(eid=max(keep))
+        # self.db.remove(eids=purge)
+        # self.last_filed = self.db.get(eid=max(keep))
+        print "last id?" self.db.get(eid=max(keep))
         return self.mem_db
             
         
@@ -184,15 +185,17 @@ class tiny_db():
         return result
 
     def list_all(self):
-        purge = []
-        twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
+        # purge = []
+        # twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.db.all():
-            print item.eid
-            if item['time'] < twoDaysAgo:
-                purge.append(item.eid)
-            else:
-                self.mem_db.append(item)
-            print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
+            print item.eid + " " + str(item['accn'])
+            # if item['time'] < twoDaysAgo:
+                # purge.append(item.eid)
+            # else:
+            self.mem_db.append(item)
+            # print "found: " str(item['accn'])
+        # print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
+    
         # self.db.remove(eids=purge)
         # self.last_filed = self.db.get(eid=[max(purge)])
         return self.mem_db
