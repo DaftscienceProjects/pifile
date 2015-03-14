@@ -159,7 +159,7 @@ class tiny_db():
                 keep.append(item.eid)
         # self.db.remove(eids=purge)
         # self.last_filed = self.db.get(eid=max(keep))
-        print "last id " + max(keep)
+        print "last id " + str(max(keep))
         return self.mem_db
             
         
