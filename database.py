@@ -173,7 +173,7 @@ class tiny_db():
                 purge.append(item.eid)
             else:
                 self.mem_db.append(item)
-            # print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
+            print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         self.db.remove(eids=purge)
         return self.mem_db
         
