@@ -59,6 +59,7 @@ class tiny_db():
         except:
             self.last_filed = None
             # print "Last Filed is None"
+        return self.last_filed
 
     def new_day(self):
         # print('creating new rack')
