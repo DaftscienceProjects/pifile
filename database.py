@@ -188,7 +188,7 @@ class tiny_db():
         # purge = []
         # twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.db.all():
-            print item.eid + " " + str(item['accn'])
+            print str(item.eid) + " " + str(item['accn'])
             # if item['time'] < twoDaysAgo:
                 # purge.append(item.eid)
             # else:
