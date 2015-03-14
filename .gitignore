@@ -1,5 +1,4 @@
-*.db
+*.json
 *.pyc
+*.json
 *.png
-db.json
-
