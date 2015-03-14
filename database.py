@@ -174,7 +174,7 @@ class tiny_db():
             else:
                 self.mem_db.append(item)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
-        self.db.remove(eids=purge)
+        # self.db.remove(eids=purge)
         return self.mem_db
         
 RACK_DB = tiny_db()
