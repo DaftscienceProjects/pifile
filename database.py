@@ -37,9 +37,15 @@ class tiny_db():
         # 	First it inserts he item, and returns an eid
         # 	that eid is used to then get what it just inserted.
         # 	then that dict is put into last filed
+        print "-----------------------"
+        print "starting to file accn"
         self.mem_db.append(insert)
+        print "written to memory"
         self.last_filed = self.db.get(eid=self.db.insert(insert))
+        print "written to disk"
         self.next_location()
+        print "next location updated"
+        print "======================="
 
     def get_last_filed(self):
         # db.all returns a list of every tube,
