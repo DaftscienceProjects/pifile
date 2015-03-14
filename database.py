@@ -17,6 +17,10 @@ class tiny_db():
         self.mem_db = []
         self.list_all()
         
+        # self.tables = []
+        # for item in self.db.tables():
+            
+        
         self.rack_day = None
         self.next={}
         self.next_location()
@@ -96,33 +100,6 @@ class tiny_db():
         self.next['rackDay'] = today
 
 
-
-    # def next_location(self):
-    #     today = strftime('%a', localtime(time()))
-    #     self.next = 
-    #     # print today
-    #     if self.last_filed is None:
-    #         self.new_day()
-    #         return
-    #     # pprint (self.last_filed)
-    #     if self.last_filed['rackDay'] != today:
-    #         # print "creating new day"
-    #         self.new_day()
-    #     elif self.last_filed['column'] == self.column_width:
-    #         if self.last_filed['row'] == self.row_height:
-    #             self.next_column = 1
-    #             self.next_row = 1
-    #             self.next_rack = self.last_filed['rack'] + 1
-    #         else:
-    #             self.next_column = 1
-    #             self.next_row = self.last_filed['row'] + 1
-    #             self.next_rack = self.last_filed['rack']
-    #     else:
-    #         self.next_column = self.last_filed['column'] + 1
-    #         self.next_rack = self.last_filed['rack']
-    #         self.next_row = self.last_filed['row']
-    #     self.rack_day = today
-
     def print_properties(self):
         print self.last_filed
         print self.next_column
@@ -130,22 +107,6 @@ class tiny_db():
         print self.next_rack
         print self.rack_day
 
-    def old_find_accn(self, accn):
-        print "looking for: " + str(accn)
-        # testTime = 1422225306.907
-        twoDaysAgo = int(
-            mktime(
-                (datetime.date.today() - datetime.timedelta(2)).timetuple()))
-        print "found the date of two days ago"
-        # So this will check for accn and compare time
-        # Returning only values that after two days ago
-        print "starting search"
-        result = self.db.search(
-            (where('accn') == accn) & (
-                where('time') > twoDaysAgo))
-        print "finished search"
-        pprint(result)
-        return result
     def purge_old(self):
         purge = []
         keep = []
@@ -174,7 +135,6 @@ class tiny_db():
         # So this will check for accn and compare time
         # Returning only values that after two days ago
         print "starting search"
-        # result = self.db.search((where('accn') == accn) & (where('time') > twoDaysAgo))
         result = []
         for item in self.mem_db:
             if item['accn'] == accn:
@@ -186,19 +146,9 @@ class tiny_db():
         return result
 
     def list_all(self):
-        # purge = []
-        # twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
         for item in self.db.all():
             print str(item.eid) + " " + str(item['accn'])
-            # if item['time'] < twoDaysAgo:
-                # purge.append(item.eid)
-            # else:
             self.mem_db.append(item)
-            # print "found: " str(item['accn'])
-        # print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
-    
-        # self.db.remove(eids=purge)
-        # self.last_filed = self.db.get(eid=[max(purge)])
         return self.mem_db
         
 RACK_DB = tiny_db()
@@ -206,26 +156,7 @@ RACK_DB = tiny_db()
 
 if __name__ == '__main__':
     import timeit
-    # for x in xrange(100):
-        # print x
-        # RACK_DB.file_accn(x)
-
-    # rack_db.find_accn(8)
-    
-    # print RACK_DB.next_row
-    # print RACK_DB.next_column
-    # print RACK_DB.next_rack
-
-    # start = localtime()
-    # RACK_DB.find_accn('050065740')
     # RACK_DB.purge_old()
     # RACK_DB.list_all()
     pprint(RACK_DB.get_last_filed())
-    # RACK_DB.new_find_accn('050065740')
-    # stamp = localtime()
-    # delta = start - stamp
-    # pprint(delta)
 
-    # RACK_DB.list_all()
-
-    # rack_db.next_location()
