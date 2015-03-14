@@ -190,7 +190,7 @@ class tiny_db():
                 self.mem_db.append(item)
             print "found: rack  " + str(item['rack']) + " " + str(item['column']) + " " + str(item['row'])+ " " + str(item['time'])
         # self.db.remove(eids=purge)
-        self.last_filed = self.db.get(eid=[max(purge)])
+        # self.last_filed = self.db.get(eid=[max(purge)])
         return self.mem_db
         
 RACK_DB = tiny_db()
@@ -210,8 +210,9 @@ if __name__ == '__main__':
 
     # start = localtime()
     # RACK_DB.find_accn('050065740')
-    # RACK_DB.purge_old()
-    # RACK_DB.list_all()
+    RACK_DB.purge_old()
+    RACK_DB.list_all()
+    pprint(RACK_DB.get_last_filed())
     # RACK_DB.new_find_accn('050065740')
     # stamp = localtime()
     # delta = start - stamp
