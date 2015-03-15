@@ -29,7 +29,7 @@ class tiny_db():
         for item in tempDB.all():
             if item['time'] > days_to_keep:
                 self.mem_db.append(item)
-                with transaction(table) as tr:
+                with transaction(self.table) as tr:
                     tr.insert(item)
                     
         
@@ -70,10 +70,10 @@ class tiny_db():
         print "written to memory"
         self.cache.append(insert)
         # self.db.insert(insert)
-        table = self.db.table()
+        # table = self.db.table()
         if len(self.cache) < 5:
             for item in self.cache:
-                with transaction(table) as tr:
+                with transaction(self.table) as tr:
             # tr.insert({})
                     tr.insert(item)
             self.cache = []
