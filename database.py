@@ -26,7 +26,7 @@ class tiny_db():
 
         # self.db.close()
         self.mem_db = []
-        for item in tempDB.all():
+        for item in self.db.all():
             if item['time'] > days_to_keep:
                 self.mem_db.append(item)
                 with transaction(self.table) as tr:
