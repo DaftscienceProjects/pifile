@@ -31,7 +31,7 @@ class tiny_db():
             # self.db.insert(item)
         # self.db.close()
         # del self.db
-
+        self.cache = []
 
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
@@ -64,12 +64,16 @@ class tiny_db():
         print "starting to file accn"
         self.mem_db.append(insert)
         print "written to memory"
-
+        self.cache.append(insert)
         # self.db.insert(insert)
         table = self.db.table()
-        with transaction(table) as tr:
+        if len(self.cache) < 5:
+            for item in self.cache:
+                with transaction(table) as tr:
             # tr.insert({})
-            tr.insert(insert)
+                    tr.insert(item)
+            self.cache = []
+        
 
         print "stored"
         self.last_filed = insert
