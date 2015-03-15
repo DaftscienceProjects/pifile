@@ -229,7 +229,7 @@ if __name__ == '__main__':
            # 'bool': [True, False, True, False]}
 
     x=0
-    while x < 20:
+    while x < 120:
         RACK_DB.file_accn(x)
         x += 1
         # RACK_DB.db.close()
