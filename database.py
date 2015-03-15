@@ -21,14 +21,18 @@ class tiny_db():
 
 
         # self.db.WRITE_CACHE_SIZE = 3
-
-
+        self.table = self.db.table()
+        
 
         # self.db.close()
-
-        # for item in tempDB.all():
-            # if item['time'] > days_to_keep:
-            # self.db.insert(item)
+        self.mem_db = []
+        for item in tempDB.all():
+            if item['time'] > days_to_keep:
+                self.mem_db.append(item)
+                with transaction(table) as tr:
+                    tr.insert(item)
+                    
+        
         # self.db.close()
         # del self.db
         self.cache = []
@@ -36,7 +40,7 @@ class tiny_db():
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
         self.get_last_filed()
-        self.mem_db = []
+        
         # self.list_all()
         self.accn_batch = []
         self.rack_day = None
