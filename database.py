@@ -12,7 +12,7 @@ from pprint import pprint
 class tiny_db():
 
     def __init__(self):
-        # days_to_keep = int(mktime((datetime.date.today() - datetime.timedelta(3)).timetuple()))
+        days_to_keep = int(mktime((datetime.date.today() - datetime.timedelta(3)).timetuple()))
         # tempDB = TinyDB(DATABASE_SETTINGS['database'])
         self.db = TinyDB(DATABASE_SETTINGS['database'])
         # self.db = TinyDB(DATABASE_SETTINGS['database'], storage=CachingMiddleware(JSONStorage))
