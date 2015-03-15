@@ -59,12 +59,15 @@ class tiny_db():
         # db.all returns a list of every tube,
         # the [-1] will print the last item in the list,
         # which should be the last tube filed
+        print "---Last Filed---"
         try:
             self.last_filed = self.db.all()[-1]
             pprint(self.last_filed)
         except:
             self.last_filed = None
             # print "Last Filed is None"
+        pprint(self.last_filed)
+        print "---end last filed---"
         return self.last_filed
 
     def new_day(self):
@@ -100,6 +103,9 @@ class tiny_db():
             self.next['rack'] = self.last_filed['rack']
             self.next['row'] = self.last_filed['row']
         self.next['rackDay'] = today
+        print "--- next location ---"
+        pprint(self.next)
+        print "--- end of next location ---"
 
 
     def print_properties(self):
