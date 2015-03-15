@@ -92,7 +92,7 @@ class tiny_db():
         # the [-1] will print the last item in the list,
         # which should be the last tube filed
         try:
-            self.last_filed = self.db.all()[-1]
+            self.last_filed = self.mem_db[-1]
             pprint(self.last_filed)
         except:
             self.last_filed = None
