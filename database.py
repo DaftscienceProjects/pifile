@@ -30,8 +30,8 @@ class tiny_db():
             if item['time'] > days_to_keep:
                 print (item.eid)
                 self.mem_db.append(item)
-                with transaction(self.table) as tr:
-                    tr.insert(item)
+        with transaction(self.table) as tr:
+            tr.insert(self.mem_db)
                     
         
         # self.db.close()
