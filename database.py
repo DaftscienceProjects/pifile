@@ -9,50 +9,51 @@ from global_variables import DATABASE_SETTINGS
 from pprint import pprint
 
 
+from metrics import profile, print_prof_data
+
 class tiny_db():
 
     def __init__(self):
-        days_to_keep = int(mktime((datetime.date.today() - datetime.timedelta(3)).timetuple()))
-        # tempDB = TinyDB(DATABASE_SETTINGS['database'])
+        self.days_to_keep = int(mktime((datetime.date.today() - datetime.timedelta(3)).timetuple()))
+
         self.db = TinyDB(DATABASE_SETTINGS['database'])
-        # self.db = TinyDB(DATABASE_SETTINGS['database'], storage=CachingMiddleware(JSONStorage))
-        # self.storage = CachingMiddleware(MemoryStorage)
-        # self.storage()  # Initialization
-
-
-        # self.db.WRITE_CACHE_SIZE = 3
-        self.table = self.db.table()
-        
-
-        # self.db.close()
+        # SET UP A MEMORY VERSION OF THE DATABASE
         self.mem_db = []
         for item in self.db.all():
-            if item['time'] > days_to_keep:
-                print (item.eid)
+            # if item['time'] > self.days_to_keep:
+                # print (item.eid)
                 self.mem_db.append(item)
-        with transaction(self.table) as tr:
-            tr.insert(self.mem_db)
-                    
-        
-        # self.db.close()
-        # del self.db
+
+        self.table = self.db.table('_default', smart_cache=True)
+        self.CACHE_SIZE = 1
+        # self.purge_old()
+
+        # CREATE A CACHE FOR TINYRECORD
         self.cache = []
 
+
+        # SET UP DATABASE VARIABLES
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
         self.get_last_filed()
-        
-        # self.list_all()
-        self.accn_batch = []
+
         self.rack_day = None
         self.next={}
         self.next_location()
 
+        self.db.purge_tables()
+        self.table = self.db.table('_default', smart_cache=True)
+
+        with transaction(self.table) as tr:
+                for item in self.mem_db:
+                    tr.insert(item)
+
 
 
         # self.table = self.db.table('table_name')
-
+    @profile
     def file_accn(self, accn):
+        # print('file_accn')
         insert = {
             'accn': accn,
             'rack': self.next['rack'],
@@ -61,47 +62,66 @@ class tiny_db():
             'row': self.next['row'],
             'time': time()
         }
-        # this does a few thigns:
-        # 	First it inserts he item, and returns an eid
-        # 	that eid is used to then get what it just inserted.
-        # 	then that dict is put into last filed
-        print "-----------------------"
-        print "starting to file accn"
         self.mem_db.append(insert)
-        print "written to memory"
-        self.cache.append(insert)
-        # self.db.insert(insert)
-        # table = self.db.table()
-        if len(self.cache) < 5:
-            for item in self.cache:
-                with transaction(self.table) as tr:
-            # tr.insert({})
-                    tr.insert(item)
-            self.cache = []
-        
-
-        print "stored"
+        # self.cache.append(insert)
+        self.table.insert(insert)
         self.last_filed = insert
-        print "last filed updated"
         self.next_location()
-        print "next location updated"
-        print "======================="
+
+    @profile
+    def file_accn_tr_multi(self, accn):
+        # print('file_accn')
+        insert = {
+            'accn': accn,
+            'rack': self.next['rack'],
+            'rackDay': self.next['rackDay'],
+            'column': self.next['column'],
+            'row': self.next['row'],
+            'time': time()
+        }
+        self.mem_db.append(insert)
+        self.cache.append(insert)
+        if len(self.cache) == 5:
+            with transaction(self.table) as tr:
+                for item in self.cache:
+                    tr.insert(item)
+            # self.table.insert_multiple(self.cache)
+            self.cache = []
+        self.last_filed = insert
+        self.next_location()
+
+    @profile
+    def file_accn_tr(self, accn):
+        # print('file_accn')
+        insert = {
+            'accn': accn,
+            'rack': self.next['rack'],
+            'rackDay': self.next['rackDay'],
+            'column': self.next['column'],
+            'row': self.next['row'],
+            'time': time()
+        }
+        self.mem_db.append(insert)
+        with transaction(self.table) as tr:
+            tr.insert(insert)
+        self.last_filed = insert
+        self.next_location()
 
     def get_last_filed(self):
-        # db.all returns a list of every tube,
-        # the [-1] will print the last item in the list,
-        # which should be the last tube filed
+        _last_id = None
         try:
-            self.last_filed = self.mem_db[-1]
-            pprint(self.last_filed)
+            _last_id = self.db.table("_default")._last_id
         except:
             self.last_filed = None
             # print "Last Filed is None"
+        else:
+            self.last_filed = self.db.get(eid=_last_id)
         return self.last_filed
 
     def new_day(self):
-        # print('creating new rack')
         today = strftime('%a', localtime(time()))
+        self.purge_old()
+
         self.next['column'] = 1
         self.next['rack'] = 1
         self.next['row'] = 1
@@ -110,13 +130,10 @@ class tiny_db():
     def next_location(self):
         # print "running next location"
         today = strftime('%a', localtime(time()))
-        # print today
         if self.last_filed is None:
             self.new_day()
             return
-        # pprint (self.last_filed)
         if self.last_filed['rackDay'] != today:
-            # print "creating new day"
             self.new_day()
         elif self.last_filed['column'] == self.column_width:
             if self.last_filed['row'] == self.row_height:
@@ -133,112 +150,68 @@ class tiny_db():
             self.next['row'] = self.last_filed['row']
         self.next['rackDay'] = today
 
-
-    def print_properties(self):
-        print self.last_filed
-        print self.next_column
-        print self.next_row
-        print self.next_rack
-        print self.rack_day
-
     def purge_old(self):
+        self.days_to_keep = int(mktime((datetime.date.today() - datetime.timedelta(4)).timetuple()))
         purge = []
-        keep = []
-        twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
-        for item in self.db.all():
-            print item.eid
-            if item['time'] < twoDaysAgo:
-                print "removing: " + str(item['accn'])
-                purge.append(item.eid)
-            else:
-                self.mem_db.append(item)
-                keep.append(item.eid)
-        # self.db.remove(eids=purge)
-        # self.last_filed = self.db.get(eid=max(keep))
-        print "last id " + str(max(keep))
-        return self.mem_db
-            
-        
+        for item in self.mem_db:
+            if item['time'] < self.days_to_keep:
+                purge.append(item)
+        print "mem_db length" + str(len(self.mem_db))
+        for item in purge:
+            self.mem_db.remove(item)
+        print "mem_db length" + str(len(self.mem_db))
+
+        with transaction(self.table) as tr:
+                for item in self.mem_db:
+                    tr.insert(item)
+        # with transaction(self.table) as tr:
+            # tr.remove(where('time') < self.days_to_keep)
+    
+    @profile
     def find_accn(self, accn):
+        print "---find memory ----"
         print "looking for: " + str(accn)
-        # testTime = 1422225306.907
-        twoDaysAgo = int(
-            mktime(
-                (datetime.date.today() - datetime.timedelta(2)).timetuple()))
         print "found the date of two days ago"
-        # So this will check for accn and compare time
-        # Returning only values that after two days ago
         print "starting search"
         result = []
         for item in self.mem_db:
             if item['accn'] == accn:
                 result.append(item)
-        
-        # result = self.db.search((where('accn') == accn))
         print "finished search"
-        pprint(result)
+        # pprint(result)
         return result
 
     def list_all(self):
         for item in self.db.all():
+            pass
             print str(item.eid) + " " + str(item['accn'])
-            self.mem_db.append(item)
-        return self.mem_db
+        return
         
 RACK_DB = tiny_db()
 
 
 if __name__ == '__main__':
-    import timeit
-    # RACK_DB.purge_old()
-    # path = "test.json"
+    from metrics import profile, print_prof_data
+    import random
 
-    # tempDB = TinyDB(path)
-    # db = TinyDB(path, storage=CachingMiddleware(JSONStorage))
-    # db.WRITE_CACHE_SIZE = 3
-    # for item in tempDB.all():
-        # db.insert(item)
-    # storage = CachingMiddleware(MemoryStorage)
-    # storage()  # Initialization
-
-    # x = 0
-    # while x < 20:
-            # db.insert({'fuck': x})
-            # x +=1
-
-    # storage.write({'key': 'value'})
-    # test = db.all()
-    # print len(test)
-    # db.close()
-    # x = 0
-    # while x < 20:
-            # db.insert({'Second': x})
-            # x +=1
+    x = 0
+    max_rand = 2000
+    while x < 1000:
+        # RACK_DB.file_accn(random.randint(1, 500329123))
+        RACK_DB.file_accn_tr_multi(random.randint(1, 500329123))
+        # RACK_DB.file_accn_tr(random.randint(1, 500329123))
+        # print x
+        x+=1
 
 
-    # assert statinfo.st_size != 0
 
-    # Assert JSON file has been closed
-    # assert db._storage._handle.closed
-
-    # del db
-
-    # Repoen database
-    # db = TinyDB(path, storage=CachingMiddleware(JSONStorage))
-    # assert db.all() == [{'key': 'value'}]
-
-
-    # element = {'none': [None, None], 'int': 42, 'float': 3.1415899999999999,
-           # 'list': ['LITE', 'RES_ACID', 'SUS_DEXT'],
-           # 'dict': {'hp': 13, 'sp': 5},
-           # 'bool': [True, False, True, False]}
-
-    x=0
-    while x < 120:
-        RACK_DB.file_accn(x)
-        x += 1
-        # RACK_DB.db.close()
-
-    # RACK_DB.list_all()
-    pprint(RACK_DB.get_last_filed())
+    # @profile
+    # def search1():
+        # RACK_DB.find_accn("4newer")
+    # @profile
+    # def search2():
+        # RACK_DB.find_accn_td("4newer")
+    # search1()
+    # search2()
+    print_prof_data()
 
