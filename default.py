@@ -5,6 +5,7 @@ import os
 import random
 import traceback
 from global_variables import *
+from database import RACK_DB
 from time import time, sleep
 from keyboard import VirtualKeyboard
 sys.dont_write_bytecode = True
@@ -44,7 +45,7 @@ if RASPBERRYPI:
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
-FPS = 10
+FPS = 20
 clock = pygame.time.Clock()
 screenindex = 0
 
@@ -303,7 +304,6 @@ def getSwipeType():
     x = x_up - x_down
     y = y_up - y_down
 
-
     print x
     print y
     # y_swipe = 0
@@ -332,60 +332,6 @@ def getSwipeType():
             return 2
     # print "nothing"
     return 0
-# def getSwipeType():
-#     x, y = pygame.mouse.get_rel()
-#     print abs(x)
-#     print abs(y)
-#     y_swipe = 0
-#     x_swipe = 0
-#     swipe = 0
-#     if abs(x) <= minSwipe:
-#         if abs(y) <= minSwipe:
-#             if abs(x) < maxClick and abs(y) < maxClick:
-#                 print "click"
-#                 # pygame.mouse.set_pos(0, 0)
-#                 return 0
-#             else:
-#                 # not detected as a swipe or click
-#                 print "not a swipe or a click"
-#                 # y_swipe = -1
-#                 return -1
-#         elif y > minSwipe:
-#             print "vertical 3"
-#             y_swipe = 3
-#         elif y < -minSwipe:
-#             # pygame.mouse.set_pos(0, 0)
-#             print "vertical 4"
-#             y_swipe = 4
-#         else:
-#             print "first wtf"
-#     if abs(y) <= minSwipe:
-#         if x > minSwipe:
-#             # pygame.mouse.set_pos(0, 0)
-#             print "horizontal 1"
-#             x_swipe = 1
-#         elif x < -minSwipe:
-#             # pygame.mouse.set_pos(0, 0)
-#             print "horizontal 2"
-#             x_swipe = 2
-#         else: print "second wtf"
-#     print (x_swipe)
-#     print (y_swipe)
-#     if x_swipe == 0:
-#         print "returning y_swipe " + str(y_swipe)
-#         return y_swipe
-#     elif y_swipe == 0:
-#         print "returning x_swipe " + str(x_swipe)
-#         return x_swipe
-#     elif abs(x) > abs(y):
-#         print "returning x_swipe " + str(x_swipe)
-#         return x_swipe
-#     else:
-#         print "returning y_swipe " + str(y_swipe)
-#         return y_swipe
-
-#     print "nothing cought"
-#     return 0
 
 
 def longPress(downTime):
@@ -402,19 +348,12 @@ displayLoadingScreen(screenindex)
 while not quit:
     for event in pygame.event.get():
         # Handle quit message received
-	if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-		quit = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+            quit = True
+        # RACK_DB.list_all()
+
         if event.type == pygame.QUIT:
             quit = True
-        # if event.type == TIME_CHANGED:
-            # print "time Changed"
-            # pygame.time.Clock()
-            # continue
-        # send the event to the current screenindex
-        # this allows user interaction without interfering with
-        # swipe gestures
-        # 'Q' to quit
-
         # mouse button pressed
         if (event.type == pygame.MOUSEBUTTONDOWN):
             print "mouse_down"
@@ -473,7 +412,7 @@ while not quit:
     # if CLOCK_DIRTY == True:
         # clock = pygame.time.Clock()
         # CLOCK_DIRTY = False
-    
+
     clock.tick(FPS)
     pygame.display.flip()
 
