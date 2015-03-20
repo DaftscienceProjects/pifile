@@ -62,11 +62,11 @@ class PiInfoScreen():
         self.title = gui_objects.title_banner(
             surface=self.title_surface,
             title_icon=self.title_icon,
-            font=self.fonts['title_font']['font'],
+            font=FONTS['title_font']['font'],
             text=self.name,
             color=self.fonts['title_font']['color'],
             rect=TITLE_RECT,
-            rounded=True,
+            rounded=False,
             background_color=self.color,
             banner_location = self.banner_location)
 

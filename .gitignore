@@ -5,3 +5,4 @@ logger.log
 logger.py
 db.json
 *.json
+*.img

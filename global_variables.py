@@ -43,17 +43,6 @@ COLORS = MATERIAL_COLORS
 
 CLOCK_DIRTY = False
 
-
-
-
-
-
-
-
-
-
-
-
 validator = Validator()
 
 # try:

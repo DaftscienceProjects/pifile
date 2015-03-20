@@ -45,7 +45,7 @@ if RASPBERRYPI:
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
-FPS = 20
+FPS = 24
 clock = pygame.time.Clock()
 screenindex = 0
 
@@ -191,25 +191,6 @@ def setNextScreen(a, screenindex):
 
 
 def displayLoadingScreen(a):
-    # '''Displays a loading screen.'''
-
-    # -----------KEEP THIS!!!--------------
-    # It may be needed if screens take too long to loading
-    # ---------------------------------------------
-    # screen.fill(COLORS['CLOUD'])
-
-    # holdtext = myfont.render("Loading screen: %s"
-                            # % pluginScreens[a].screenName(),
-                            # 1,
-                            # (255,255,255))
-    # holdrect = holdtext.get_rect()
-    # holdrect.centerx = screen.get_rect().centerx
-    # holdrect.centery = screen.get_rect().centery
-    # screen.blit(holdtext, holdrect)
-    # pygame.display.flip()
-    # NEWSCREEN()
-    # NEWSCREEN()
-    # pygame.time.set_timer(NEWSCREEN, 1)
     pass
 
 
@@ -351,7 +332,6 @@ while not quit:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             quit = True
         # RACK_DB.list_all()
-
         if event.type == pygame.QUIT:
             quit = True
         # mouse button pressed
@@ -360,7 +340,6 @@ while not quit:
             mouseDownTime = pygame.time.get_ticks()
             mouseDownPos = pygame.mouse.get_pos()
             # pygame.mouse.get_rel()
-
         if (event.type == pygame.MOUSEBUTTONUP):
             print "mouse_up"
             mouseUpPos = pygame.mouse.get_pos()
@@ -377,6 +356,7 @@ while not quit:
                 # clock = pygame.time.Clock()
                 continue
             elif swipe == 3:
+                pluginScreens[screenindex].exit_function()
                 tmp_event = pygame.event.Event(SWIPE_DOWN, value=1)
                 pluginScreens[screenindex].event_handler(tmp_event)
                 continue
@@ -385,24 +365,20 @@ while not quit:
             elif swipe == 4:
                 # vkey = VirtualKeyboard(screen)
                 # tmp = vkey.run('')
+                pluginScreens[screenindex].exit_function()
                 tmp_event = pygame.event.Event(SWIPE_UP, value=1)
                 pluginScreens[screenindex].event_handler(tmp_event)
                 continue
             # print "Screen Index After: " + str(screenindex)
-
         if (event.type == TFTBUTTONCLICK):
             if (event.button == 1):
                 pluginScreens[a].Button1Click()
-
             if (event.button == 2):
                 pluginScreens[a].Button2Click()
-
             if (event.button == 3):
                 pluginScreens[a].Button3Click()
-
             if (event.button == 4):
                 pluginScreens[a].Button4Click()
-
         if (event.type == NEWSCREEN):
             showNewScreen()
         pluginScreens[screenindex].event_handler(event)
@@ -414,6 +390,7 @@ while not quit:
         # CLOCK_DIRTY = False
 
     clock.tick(FPS)
+    # clock.tick()
     pygame.display.flip()
 
 # If we're here we've exited the display loop...
