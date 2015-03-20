@@ -175,7 +175,7 @@ class tiny_db():
         self.next['rackDay'] = self._today()
 
     @profile
-    def find_accn(self, accn):
+    def find_accn_slow(self, accn):
         result = []
         for key, value in self.dict_db.iteritems():
             # print value['accn']
@@ -185,7 +185,7 @@ class tiny_db():
         return result
 
     @profile
-    def find_accn_mem(self, accn):
+    def find_accn(self, accn):
         result = []
         for item in self.mem_db:
             if item['accn'] == accn:
