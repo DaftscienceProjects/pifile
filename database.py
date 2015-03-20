@@ -20,7 +20,7 @@ class tiny_db():
     def __init__(self):
         self.debug = True
         self.dict_db = SqliteDict('./racks.sqlite', autocommit=True)
-        self.days_to_keep = 6
+        self.days_to_keep = 4
         self._define_mem_db()
         # SET UP DATABASE VARIABLES
         self.row_height = DATABASE_SETTINGS['rows']
@@ -62,6 +62,8 @@ class tiny_db():
                        other_readable,
                        first_filed['time']])
             print x
+            return x
+
 
     def _print_database(self):
         if len(self.mem_db) < 2:
@@ -71,8 +73,9 @@ class tiny_db():
         for item in self.mem_db:
             x.add_row(self._make_entry_row(item))
         # print x.get_string(sortby="Timestamp")
-        f = open('test.txt', 'w')
+        f = open('_database_info.txt', 'w')
         f.write(x.get_string(sortby="Timestamp"))
+        f.write(self._db_info().get_string())
         f.close()
         print x.get_string(fields=["Accn", "Rack", "Position"])
 
