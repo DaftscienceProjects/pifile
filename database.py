@@ -22,16 +22,20 @@ class tiny_db():
         self.dict_db = SqliteDict('./racks.sqlite', autocommit=True)
         self.days_to_keep = 6
         self._define_mem_db()
-
         # SET UP DATABASE VARIABLES
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
         self.get_last_filed()
-
         self.rack_day = self._today()
         self.next = {}
+        self._today()
         self.next_location()
         self._db_info()
+        if self.last_filed is None:
+            try:
+                self._convert_to_sqlitedb()
+            except:
+                print "Database is Empty"
 
     @profile
     def _define_mem_db(self):
@@ -43,59 +47,53 @@ class tiny_db():
     def _db_info(self):
         if len(self.mem_db) > 0:
             x = PrettyTable([" ", "size"])
-            # x.padding_width = 1
             x.add_row(["DB Size", len(self.dict_db)])
-            print x
             x = PrettyTable(["stats", "accn", "Date", "Timestamp"])
-
-            pprint(self.last_filed)
+            # pprint(self.last_filed)
             readable = self._conv_timestamp(self.last_filed['time'])
             x.add_row(["Last",
                        self.last_filed['accn'],
                        readable,
                        self.last_filed['time']])
             first_filed = self.get_first_filed()
-
-            readable = self._conv_timestamp(first_filed['time'])
+            other_readable = self._conv_timestamp(first_filed['time'])
             x.add_row(["First",
                        first_filed['accn'],
-                       readable,
+                       other_readable,
                        first_filed['time']])
-
             print x
 
     def _print_database(self):
+        if len(self.mem_db) < 2:
+            return none
         x = PrettyTable(["Accn", "Rack", "Position", "Time", "Timestamp"])
         # x.padding_width = 1
         for item in self.mem_db:
             x.add_row(self._make_entry_row(item))
-        print x.get_string(sortby="Timestamp")
+        # print x.get_string(sortby="Timestamp")
         f = open('test.txt', 'w')
         f.write(x.get_string(sortby="Timestamp"))
         f.close()
+        print x.get_string(fields=["Accn", "Rack", "Position"])
 
     def _make_entry_row(self, item):
         readable = self._conv_timestamp(item['time'])
-        print item['row']
+        # print item['row']
         x = [item['accn'],
              item['rackDay'] + ' ' + str(item['rack']),
-             ROWS[str(item['row'])]+' '+str(item['column']),
-             readable, 
+             ROWS[str(item['row'])] + ' ' + str(item['column']),
+             readable,
              item['time']]
         return x
-
-            # 'accn': accn,
-            # 'rack': self.next['rack'],
-            # 'rackDay': self.next['rackDay'],
-            # 'column': self.next['column'],
-            # 'row': self.next['row'],
-            # 'time': str(time())
 
     def _conv_timestamp(self, ts):
         dt = datetime.datetime.fromtimestamp(float(ts))
         return dt.strftime("%H:%M - %m.%d.%Y")
 
     def _today(self):
+        self.purge_date = int(
+            mktime(
+                (datetime.date.today() - datetime.timedelta(self.days_to_keep)).timetuple()))
         return strftime('%a', localtime(time()))
 
     @profile
@@ -112,8 +110,6 @@ class tiny_db():
         self.last_filed = insert
         self.dict_db[insert['time']] = insert
         self.next_location()
-        # if self.debug:
-            # self._db_info()
 
     @profile
     def get_last_filed(self):
@@ -127,16 +123,24 @@ class tiny_db():
 
     @profile
     def get_first_filed(self):
-        if len(self.mem_db) == 1:
+        # if len(self.mem_db) == 1:
+            # return self.last_filed
+        # else:
+        # print self.last_filed
+        if self.last_filed == None:
             return self.last_filed
         else:
             _smallest_id = self.last_filed['time']
             first_filed = None
             for item in self.mem_db:
-                if _smallest_id > item['time']:
-                    _smallest_id = item['time']
-                    first_filed = item
-            return first_filed
+                if item:
+                    # print item
+                    if _smallest_id > item['time']:
+                        # print "smaller"
+                        _smallest_id = item['time']
+                        first_filed = item
+                # print first_filed
+                return first_filed
 
     @profile
     def new_day(self):
@@ -198,10 +202,13 @@ class tiny_db():
         for table in old_db.tables():
             for item in old_db.table(table).all():
                 if len(item['accn']) < 15:
-                    self.mem_db.append(item)
-                    print "   Converted:   " + str(i) + " of " + str(total)
-                    i += 1
-                    self.dict_db[str(item['time'])] = item
+                    if int(item['time']) > self.purge_date:
+                        self.mem_db.append(item)
+                        print "   Converted:   " + str(i) + " of " + str(total)
+                        i += 1
+                        self.dict_db[str(item['time'])] = item
+                    else:
+                        print "REMOVING OLD THING"
         print "DATABASE MIGRATION COMPLETE"
         print "COMMITING CHANGES"
         self.get_last_filed()
@@ -213,7 +220,6 @@ if __name__ == '__main__':
     import random
 
     def populate(n):
-
         while n > 0:
             for x in range(1, 8):
                 for y in range(100):
@@ -230,7 +236,6 @@ if __name__ == '__main__':
             sample.append(item)
         mem_nf = 0
         nf = 0
-
         for item in random.sample(sample, n):
             if len(RACK_DB.find_accn(item)) > 0:
                 print "found in memory"
