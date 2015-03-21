@@ -64,7 +64,7 @@ class PiInfoScreen():
             title_icon=self.title_icon,
             font=FONTS['title_font']['font'],
             text=self.name,
-            color=self.fonts['title_font']['color'],
+            color=FONTS['title_font']['color'],
             rect=TITLE_RECT,
             rounded=False,
             background_color=self.color,
@@ -103,9 +103,9 @@ class PiInfoScreen():
         self.accn_surface = self.surface.subsurface(self.accn_rect)
         self.accn_box = gui_objects.text_label(
             surface=self.accn_surface,
-            font=self.fonts['input_font']['font'],
+            font=FONTS['input_font']['font'],
             text='',
-            color=self.fonts['input_font']['color'],
+            color=FONTS['input_font']['color'],
             rect=self.accn_rect,
             valign='bottom',
             align="left",

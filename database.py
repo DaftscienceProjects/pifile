@@ -20,7 +20,7 @@ class tiny_db():
     def __init__(self):
         self.debug = True
         self.dict_db = SqliteDict('./racks.sqlite', autocommit=True)
-        self.days_to_keep = 4
+        self.days_to_keep = 5
         self._define_mem_db()
         # SET UP DATABASE VARIABLES
         self.row_height = DATABASE_SETTINGS['rows']
@@ -36,6 +36,7 @@ class tiny_db():
                 self._convert_to_sqlitedb()
             except:
                 print "Database is Empty"
+
 
     @profile
     def _define_mem_db(self):
@@ -63,7 +64,6 @@ class tiny_db():
                        first_filed['time']])
             print x
             return x
-
 
     def _print_database(self):
         if len(self.mem_db) < 2:
@@ -96,7 +96,9 @@ class tiny_db():
     def _today(self):
         self.purge_date = int(
             mktime(
-                (datetime.date.today() - datetime.timedelta(self.days_to_keep)).timetuple()))
+                (datetime.date.today() -
+                 datetime.timedelta(
+                    self.days_to_keep)).timetuple()))
         return strftime('%a', localtime(time()))
 
     @profile
@@ -130,7 +132,7 @@ class tiny_db():
             # return self.last_filed
         # else:
         # print self.last_filed
-        if self.last_filed == None:
+        if self.last_filed is None:
             return self.last_filed
         else:
             _smallest_id = self.last_filed['time']
@@ -175,16 +177,6 @@ class tiny_db():
         self.next['rackDay'] = self._today()
 
     @profile
-    def find_accn_slow(self, accn):
-        result = []
-        for key, value in self.dict_db.iteritems():
-            # print value['accn']
-            if 'accn' in value.keys():
-                if value['accn'] == accn:
-                    result.append(value)
-        return result
-
-    @profile
     def find_accn(self, accn):
         result = []
         for item in self.mem_db:
@@ -192,6 +184,7 @@ class tiny_db():
                 result.append(item)
         return result
 
+    @profile
     def _convert_to_sqlitedb(self):
         old_db = TinyDB(DATABASE_SETTINGS['database'])
         self.mem_db = []
@@ -216,6 +209,17 @@ class tiny_db():
         print "COMMITING CHANGES"
         self.get_last_filed()
 
+    @profile
+    def clean(self):
+        print "dict: " + str(len(self.dict_db))
+        print "Mem:  " +str(len(self.mem_db))
+        self.mem_db = []
+        for item in self.dict_db.iteritems():
+            if item[1]['time'] < self.purge_date:
+                del self.dict_db[item[0]]
+        self._define_mem_db()
+        print "dict: " + str(len(self.dict_db))
+        print "Mem:  " +str(len(self.mem_db))
 
 RACK_DB = tiny_db()
 
@@ -257,3 +261,4 @@ if __name__ == '__main__':
     RACK_DB._print_database()
     RACK_DB._db_info()
     print_prof_data()
+    RACK_DB.clean()

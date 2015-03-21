@@ -9,6 +9,7 @@ from database import RACK_DB
 from time import time, sleep
 from keyboard import VirtualKeyboard
 sys.dont_write_bytecode = True
+from gui_objects import render_textrect
 
 debug = True
 screensleep = 60000
@@ -155,23 +156,44 @@ def showWelcomeScreen():
     # sleep(.5)
 
 
+
+message_rect = screen.get_rect()
+message_text = render_textrect(
+    string="loading",
+    font=loading_font,
+    rect=message_rect,
+    text_color=COLORS['CLOUD'],
+    background_color=COLORS['CLOUD'],
+    justification=1,
+    FontPath=FONTS['swipe_font']['path'],
+    cutoff=False,
+    margin = (5,5),
+    MinFont=FONTS['swipe_font']['size'] - 4,
+    MaxFont=FONTS['swipe_font']['size'],
+    shrink=True,
+    vjustification=1)
+
 def showLoadedPlugin(plugin):
     '''Display a temporary screen to show when a module is successfully
     loaded.
     '''
-    # pass
-    # print "showloadedplugin"
     message = random.choice(LOADING_MESSEGES)
     LOADING_MESSEGES.remove(message)
 
-    screen.fill(COLORS['CLOUD'])
-    label = loading_font.render(message, 1, plugin.color)
-    labelpos = label.get_rect()
-    labelpos.centerx = screen.get_rect().centerx
-    labelpos.centery = screen.get_rect().centery
-    screen.blit(label, labelpos)
+
+    tmp = message.split(' ', -1)
+    first_word = tmp[1]
+    if not first_word.endswith('e'):
+        first_word += 'ing'
+    else:
+        first_word = tmp[1][:-1] + 'ing'
+    tmp[1] = first_word
+
+    message_text.string = " ".join(tmp)
+    message_text.text_color = plugin.color
+    screen.blit(message_text.update(), (0,0))
     pygame.display.flip()
-    sleep(2)
+    sleep(1)
 
 
 def setNextScreen(a, screenindex):
@@ -284,34 +306,20 @@ def getSwipeType():
     x_up, y_up = mouseUpPos
     x = x_up - x_down
     y = y_up - y_down
-
-    print x
-    print y
-    # y_swipe = 0
-    # x_swipe = 0
     swipe = 0
 
     if abs(x) < minSwipe and abs(y) < minSwipe:
-        print "Click"
         return 0
     if abs(x) < abs(y):
         if y > 0:
-            # print "swipe down"
             return 3
         if y < 0:
-            print y
-            # print "swipe up"
             return 4
     if abs(y) < abs(x):
         if x > 0:
-            print x
-            # print "swipe right"
             return 1
         if x < 0:
-            # print "swipe left"
-            print x
             return 2
-    # print "nothing"
     return 0
 
 
@@ -336,15 +344,12 @@ while not quit:
             quit = True
         # mouse button pressed
         if (event.type == pygame.MOUSEBUTTONDOWN):
-            print "mouse_down"
             mouseDownTime = pygame.time.get_ticks()
             mouseDownPos = pygame.mouse.get_pos()
             # pygame.mouse.get_rel()
         if (event.type == pygame.MOUSEBUTTONUP):
-            print "mouse_up"
             mouseUpPos = pygame.mouse.get_pos()
             swipe = getSwipeType()
-            print "Swipe: " + str(swipe)
             # print "Screen Index Before: " + str(screenindex)
             if swipe == 1:
                 pluginScreens[screenindex].exit_function()

@@ -28,7 +28,7 @@ class myScreen(PiInfoScreen):
 
         self.vkey_surface = pygame.display.get_surface()
         # self.vkey_surface = self.surface.copy()
-        self.vkey = VirtualKeyboard(self.vkey_surface)
+        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
         self.timer = False
         self.timeout = 0
         self.timeout_delay = SCREEN_TIMEOUT * 60  # in seconds

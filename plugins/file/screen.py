@@ -28,7 +28,7 @@ class myScreen(PiInfoScreen):
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
         self.vkey_surface = pygame.display.get_surface()
-        self.vkey = VirtualKeyboard(self.vkey_surface)
+        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
 
         self.surface.fill(COLORS['CLOUD'])
         self.title.update()
@@ -40,7 +40,7 @@ class myScreen(PiInfoScreen):
             self.accn_box.text = "Unavailable"
         # self.accn_box.text =  "Last Filed: #: " + accn
 
-        self.dirty = True
+        
 
         self.barcode_input = Input()
 
@@ -98,6 +98,7 @@ class myScreen(PiInfoScreen):
         self.update_indicator()
         self.clock.update()
         self.accn_box.update()
+        self.dirty = True
 
     def update_indicator(self):
         li_items = []
@@ -175,21 +176,17 @@ class myScreen(PiInfoScreen):
         if self.clock.text == strftime("%H:%M", localtime(time())):
             if self.dirty == False:
                 return self.screen
-        if True:
-            self.dirty = False
-            # RACK_DB.next_location()
-            self.hint_surface.blit(self.hint_text.update(), (0, 0))
-            file_string = gui_objects.format_location(RACK_DB.next)
-            # try:
+            else:
+                self.dirty = True
 
-            # except:
-            # self.accn_box.text = "Unavailable"
-            # self.info1.update()
-            self.location_indicator.update()
-            self.info2.text = file_string
-            self.info2.update()
-            self.clock.text = strftime("%H:%M", localtime(time()))
-            self.screen.blit(self.surface, (0, 0))
-            self.clock.update()
-            self.accn_box.update()
-            return self.screen
+        self.dirty = False
+        self.hint_surface.blit(self.hint_text.update(), (0, 0))
+        file_string = gui_objects.format_location(RACK_DB.next)
+        self.location_indicator.update()
+        self.info2.text = file_string
+        self.info2.update()
+        self.clock.text = strftime("%H:%M", localtime(time()))
+        self.clock.update()
+        self.accn_box.update()
+        self.screen.blit(self.surface, (0, 0))
+        return self.screen

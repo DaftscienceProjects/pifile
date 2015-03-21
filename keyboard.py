@@ -1,7 +1,7 @@
 import pygame
 import time
 import os
-from global_variables import COLORS, ICONS, ICON_FONT_FILE
+from global_variables import COLORS, ICONS, ICON_FONT_FILE, FONTS
 from pygame.locals import *
 from sunquest import *
 
@@ -15,45 +15,41 @@ class VirtualKeyboard():
 
     ''' Implement a basic full screen virtual keyboard for touchscreens '''
 
-    def __init__(self, screen):
+    def __init__(self, screen, color, validate=True):
 
+        # SCREEN SETTINGS
         self.screen = screen
         self.rect = self.screen.get_rect()
         self.w = self.rect.width
         self.h = self.rect.height
-
         # create a background surface
         self.background = pygame.Surface(self.rect.size)
         self.screen.fill(COLORS['CLOUD'])
 
+        # KEY SETTINGS
         self.keyW = int((self.w) / 4)  # key width with border
         self.keyH = int((self.h) / 5)  # key height
-
         self.x = (self.w - self.keyW * 4) / 2  # centered
-        # print self.x
         self.y = 0  # stay away from the edges (better touch)
+        # pygame.font.init()  # Just in case
 
-        pygame.font.init()  # Just in case
+        self.keyFont = FONTS['key_font']['font']
 
-        font_file = 'Anke.ttf'
-        font_location = os.path.join("resources/fonts", font_file)
-        self.keyFont = pygame.font.Font(
-            font_location, int(
-                self.keyH * 0.8))  # keyboard font
         self.fa = pygame.font.Font(
             ICONS.font_location, int(
                 self.keyH * 0.70))  # keyboard font
 
-        # set dimensions for text input box
         self.textW = self.w  # + 4  # leave room for escape key
         self.textH = self.keyH
+        self.color = COLORS[color]
 
         self.caps = False
         self.keys = []
         self.addkeys()  # add all the keys
-        self.paintkeys()  # paint all the keys
+        # self.paintkeys()  # paint all the keys
 
-        pygame.display.update()
+        self.validate = validate
+        # pygame.display.update()
 
     def run(self, text=''):
         self.screen.fill(COLORS['CLOUD'])
@@ -93,19 +89,21 @@ class VirtualKeyboard():
                                 if DEBUG:
                                     return self.input.text
                                 else:
-                                # check that it's a valid accn
-                                    if sunquest_fix(self.input.text) != None:
-                                        self.clear()
-                                        return sunquest_fix(self.input.text)
+                                    if self.validate == False:
+                                        return self.input.text
                                     else:
-                                        self.paintkeys()
-                                        temp = self.input.text
-                                        self.input.text = 'invalid'
-                                        self.input.cursorvis = False
-                                        self.input.draw()
-                                        time.sleep(1)
-                                        self.input.text = temp
-                                        self.input.draw()
+                                        if sunquest_fix(self.input.text) != None:
+                                            self.clear()
+                                            return sunquest_fix(self.input.text)
+                                        else:
+                                            self.paintkeys()
+                                            temp = self.input.text
+                                            self.input.text = 'invalid'
+                                            self.input.cursorvis = False
+                                            self.input.draw()
+                                            time.sleep(1)
+                                            self.input.text = temp
+                                            self.input.draw()
                                     # print "invalid"
                                     # self.clear()
                     if (e.type == MOUSEMOTION):
@@ -216,7 +214,7 @@ class VirtualKeyboard():
                 y,
                 self.keyW,
                 self.keyH,
-                self.keyFont)
+                self.keyFont, self.color)
             self.keys.append(onekey)
             x += self.keyW
         onekey = VKey('keyboard-backspace',
@@ -224,7 +222,7 @@ class VirtualKeyboard():
                       y,
                       self.keyW - 1,
                       self.keyH,
-                      self.fa, special=True)
+                      self.fa, self.color, special=True)
         onekey.bskey = True
         self.keys.append(onekey)
         x += onekey.w + self.keyW / 3
@@ -240,7 +238,7 @@ class VirtualKeyboard():
                 y,
                 self.keyW,
                 self.keyH,
-                self.keyFont)
+                self.keyFont, self.color)
             self.keys.append(onekey)
             x += self.keyW
         x += self.x
@@ -249,7 +247,7 @@ class VirtualKeyboard():
                       y,
                       self.keyW - 1,
                       self.keyH,
-                      self.fa, special=True, shiftkey=True)
+                      self.fa, self.color, special=True, shiftkey=True)
         self.keys.append(onekey)
 
         y += self.keyH
@@ -263,7 +261,7 @@ class VirtualKeyboard():
                 y,
                 self.keyW,
                 self.keyH,
-                self.keyFont)
+                self.keyFont, self.color)
             self.keys.append(onekey)
             x += self.keyW
 
@@ -273,7 +271,7 @@ class VirtualKeyboard():
             y,
             self.keyW - 1,
             self.keyH * 2,
-            self.fa, special=True)
+            self.fa, self.color, special=True)
         onekey.enter = True
         self.keys.append(onekey)
 
@@ -285,7 +283,7 @@ class VirtualKeyboard():
                       y,
                       int(self.keyW),
                       self.keyH,
-                      self.fa, special=True)
+                      self.fa, self.color, special=True)
         onekey.escape = True
         self.keys.append(onekey)
         x += self.keyW
@@ -295,7 +293,7 @@ class VirtualKeyboard():
                       y,
                       int(self.keyW),
                       self.keyH,
-                      self.keyFont)
+                      self.keyFont, self.color)
         self.keys.append(onekey)
         x += self.keyW
 
@@ -304,7 +302,7 @@ class VirtualKeyboard():
                       y,
                       int(self.keyW),
                       self.keyH,
-                      self.fa, special=True)
+                      self.fa, self.color, special=True)
         onekey.clear = True
         self.keys.append(onekey)
         x += self.keyW
@@ -498,6 +496,7 @@ class VKey(pygame.sprite.Sprite):
             w,
             h,
             font,
+            color,
             special=False,
             shiftkey=False):
         pygame.sprite.Sprite.__init__(self)
@@ -520,8 +519,8 @@ class VKey(pygame.sprite.Sprite):
         self.image = pygame.Surface((w - 1, h - 1))
         self.rect = Rect(self.x, self.y, w, h)
 
-        self.color = COLORS['TEAL']['600']
-        self.selected_color = COLORS['DEEP-ORANGE']['600']
+        self.color = color['500']
+        self.selected_color = color['100']
         self.font_color = COLORS['CLOUD']
 
         if special:

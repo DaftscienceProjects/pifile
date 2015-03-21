@@ -7,7 +7,7 @@ from time import strftime, localtime
 from PIL import ImageDraw, ImageFont
 from global_variables import COLORS, ROWS, ICON_FONT_FILE, ICONS, SHADING_ITERATIONS
 from global_variables import ICON_FONT_JSON, REBUILD_BANNER, CORNER_RADIUS
-from global_variables import SHADING_QUALITY, BACKGROUND_COLOR, BORDER
+from global_variables import SHADING_QUALITY, BACKGROUND_COLOR, BORDER, BANNNER_ICON_SIZE
 
 from pprint import pprint
 
@@ -130,7 +130,7 @@ class title_banner(text_label):
         self.fontRect.top = self.fontRect.top + 4
         self.surface.blit(self.label, self.fontRect)
 
-        fa = pygame.font.Font(ICONS.font_location, 45)
+        fa = pygame.font.Font(ICONS.font_location, BANNNER_ICON_SIZE)
         icon = fa.render(ICONS.unicode(self.title_icon), 1, self.color)
 
         icon_rect = icon.get_rect()
