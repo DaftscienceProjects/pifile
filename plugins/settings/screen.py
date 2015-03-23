@@ -171,7 +171,7 @@ class myScreen(PiInfoScreen):
         self.shell_commands = {
             'backup': 'cp racks.sqlite racks.sqlite.bak',
             'update': 'git pull',
-            'restart': "reboot -now"
+            'restart': "sudo reboot -n"
         }
         self.commands = {
             'F1': self.clean_database,
