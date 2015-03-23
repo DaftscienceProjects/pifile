@@ -3,6 +3,7 @@ import pygame
 import gui_objects
 from time import strftime, localtime, time
 from pprint import pprint
+from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
 from global_variables import COLORS, ICONS, SCREEN_TIMEOUT
 from displayscreen import PiInfoScreen
