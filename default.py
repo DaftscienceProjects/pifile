@@ -21,16 +21,16 @@ RASPBERRYPI = False
 # pprint(pygame.di`play.list_modes(), 3)
 # Tell the RPi to use the TFT screen and that it's a touchscreen device
 if os.name == 'posix':
-    RASPBERRYPI = False
+    RASPBERRYPI = True
     # RASPBERRYPI = True
     print "You're running raspberry pi"
     # Hide mouse
-    # from pitftgpio import PiTFT_GPIO
+    from pitftgpio import PiTFT_GPIO
     os.putenv('SDL_VIDEODRIVER', 'fbcon')
     os.putenv('SDL_FBDEV', '/dev/fb1')
     os.putenv('SDL_MOUSEDRV', 'TSLIB')
     os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
-    # tftscreen = PiTFT_GPIO()
+    tftscreen = PiTFT_GPIO()
 ##############################################################################
 # Create a clock and set max FPS (This reduces a lot CPU ussage)
 pygame.init()

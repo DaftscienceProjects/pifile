@@ -62,56 +62,28 @@ class PiTFT_GPIO(object):
 
     def __setupBacklight(self):
 
-        set_pwm = 'echo pwm > /sys/class/rpi-pwm/pwm0/mode'
-        set_frequency = 'echo 1000 > /sys/class/rpi-pwm/pwm0/frequency'
-        set_duty = 'echo 50 > /sys/class/rpi-pwm/pwm0/duty'
+        set_pwm = 'gpio -g mode 18 pwm'
+        set_duty = 'gpio -g pwm 1000'
 
         subprocess.call(set_pwm, shell=True)
-        subprocess.call(set_frequency, shell=True)
         subprocess.call(set_duty, shell=True)
-
-        # This is old code, it may bee needed with the resistive touch screens
-        # Check if GPIO252 has already been set up
-        # if not exists(self.backlightpath):
-        #     try:
-        #         with open("/sys/class/gpio/export", "w") as bfile:
-        #             bfile.write("252")
-
-        #     except:
-        #         return False
-
-        # Set the direction
-        # try:
-        #     with open("/sys/class/gpio/gpio252/direction", "w") as bfile:
-        #         bfile.write("out")
-
-        # except:
-        #     return False
-
-        # If we had no errors up to here then we should be able to control
-        # backlight
         return True
 
     def set_backlight_brightness(self, duty):
-        set_pwm = 'echo pwm > /sys/class/rpi-pwm/pwm0/mode'
-        set_frequency = 'echo 1000 > /sys/class/rpi-pwm/pwm0/frequency'
-        set_duty = 'echo 50 > /sys/class/rpi-pwm/pwm0/duty'
-        set_duty = 'echo ' + str(duty) + ' > /sys/class/rpi-pwm/pwm0/duty'
-        subprocess.call(set_pwm, shell=True)
-        subprocess.call(set_frequency, shell=True)
+        set_duty = 'gpio -g pwm 18 ' + str(duty)
         subprocess.call(set_duty, shell=True)
 
     def backlight_off(self, *arg):
-        self.set_backlight_brightness('1')
+        self.set_backlight_brightness('0')
 
     def backlight_low(self, *arg):
-        self.set_backlight_brightness('10')
+        self.set_backlight_brightness('400')
 
     def backlight_med(self, *arg):
-        self.set_backlight_brightness('25')
+        self.set_backlight_brightness('800')
 
     def backlight_high(self, *arg):
-        self.set_backlight_brightness('99')
+        self.set_backlight_brightness('1023')
 
     def Backlight(self, light):
         '''Turns the PiTFT backlight on or off.
