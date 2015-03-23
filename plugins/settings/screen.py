@@ -189,8 +189,9 @@ class myScreen(PiInfoScreen):
         message +="\n -Downloading patch"
         self.update_message(message)
         subprocess.call(self.shell_commands['update'], shell=True)
-        self.sleep(1)
+        sleep(1)
         self.update_message('Update Complete\nRestarting now')
+        sleep(2)
         subprocess.call(self.shell_commands['restart'], shell=True)
 
 
