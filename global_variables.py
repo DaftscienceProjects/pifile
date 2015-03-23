@@ -173,7 +173,7 @@ ICONS = icon(ICON_FONT_JSON, ICON_FONT_FILE)
 ###################################
 
 LOADING_MESSEGES = []
-TREKNOBABBLE = 'treknobabble.sqlite'
+TREKNOBABBLE = 'treknobabble.tbdb'
 
 _TREKNOBABBLE = os.path.join('resources/', TREKNOBABBLE)
 tb_db = SqliteDict(_TREKNOBABBLE)

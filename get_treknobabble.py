@@ -7,7 +7,7 @@ r = requests.get("http://" + url)
 data = r.text
 soup = BeautifulSoup(data)
 from sqlitedict import SqliteDict
-dict_db = SqliteDict('resources/treknobabble.sqlite', autocommit=True)
+dict_db = SqliteDict('resources/treknobabble.tbdb', autocommit=True)
 
 
 treknobabble = []
@@ -38,7 +38,7 @@ def get_tb():
                 duplicates += 1
         treknobabble.append(failure)
 
-# get_tb()
+get_tb()
 
 for item in dict_db.iteritems():
     pprint(item)
