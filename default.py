@@ -30,7 +30,7 @@ if os.name == 'posix':
     os.putenv('SDL_FBDEV', '/dev/fb1')
     os.putenv('SDL_MOUSEDRV', 'TSLIB')
     os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
-    tftscreen = PiTFT_GPIO()
+    # tftscreen = PiTFT_GPIO()
 ##############################################################################
 # Create a clock and set max FPS (This reduces a lot CPU ussage)
 pygame.init()
