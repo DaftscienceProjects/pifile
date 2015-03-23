@@ -51,10 +51,10 @@ for root, dirnames, filenames in os.walk('./'):
         _PLUGIN_CONFIG = ConfigObj(filename, configspec=configspec)
         result = _CONFIG.validate(validator)
         if result != True:
-            config_results.append([root+filename, red('FAILED')])
+            config_results.append([filename, red('FAILED')])
             errors.append(result)
         else:
-            config_results.append([root+filename, green('PASSED')])
+            config_results.append([filename, green('PASSED')])
 
 print tabulate(config_results)
 # pprint(errors)
