@@ -248,7 +248,7 @@ MainModule = "screen"
 pluginScreens = []
 
 if RASPBERRYPI:
-    tftscreen.set_backlight_med()
+    tftscreen.backlight_med()
 
 # Set our screen size
 # Should this detect attached display automatically?
