@@ -67,7 +67,7 @@ class tiny_db():
 
     def _list_size(self):
         size = {'memory': len(self.mem_db), 'disk': len(self.dict_db)}
-        return size
+        return  size
     def _print_database(self):
         if len(self.mem_db) < 2:
             return none
