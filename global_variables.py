@@ -6,20 +6,66 @@ import simplejson
 from pprint import pprint
 from parseIcons import icon
 from validate import Validator
+from sqlitedict import SqliteDict
 sys.dont_write_bytecode = True
+from colors import red, green, blue
+import fnmatch
+from tabulate import tabulate
 
-DEBUG = False
+DEBUG = True
 
 # THIS SECTION IS TO READ THE CONFIG FILE
 CONFIG_FILE = 'config/settings.ini'
 CONFIG_SPEC = 'config/_config_validator.ini'
+
 PLUGIN_VALIDATOR = 'config/_plugin_validator.ini'
 
-
-# except:
-    # print "Error reading config/settings.ini"
-
 MATERIAL_COLORS = 'material_colors.json'
+
+
+
+config_results = []
+validator = Validator()
+configspec = ConfigObj(CONFIG_SPEC, interpolation=False, list_values=True,_inspec=True)
+_CONFIG = ConfigObj(CONFIG_FILE, configspec=configspec)
+result = _CONFIG.validate(validator)
+print "VALIDATING GLOBAL SETTINGS"
+if result != True:
+    config_results.append([CONFIG_FILE, red('FAILED')])
+    # print "-config/settings.ini " + red('FAILED ') + "validation"
+    print tabulate(config_results)
+    pprint(result)
+else:
+    print "-config/settings.ini " + green('PASSED ') + "validation"
+
+
+configspec = ConfigObj(PLUGIN_VALIDATOR, interpolation=False, list_values=True,_inspec=True)
+config_results = []
+# PLUGIN_FILES = []
+print "\nVALIDATING PLUGIN SETTINGS"
+errors = []
+for root, dirnames, filenames in os.walk('./'):
+        # print filenames
+    for filename in fnmatch.filter(filenames, 'screen.ini'):
+        # PLUGIN_FILES.append(os.path.join(root, filename))
+        _PLUGIN_CONFIG = ConfigObj(filename, configspec=configspec)
+        result = _CONFIG.validate(validator)
+        if result != True:
+            config_results.append([filename, red('FAILED')])
+            errors.append(result)
+        else:
+            config_results.append([filename, green('PASSED')])
+
+print tabulate(config_results)
+# pprint(errors)
+
+
+pygame.font.init()
+
+
+
+CLOCK_DIRTY = False
+
 
 _COLORS = os.path.join('resources/', MATERIAL_COLORS)
 _COLORS_FILE = open(_COLORS)
@@ -33,39 +79,9 @@ for color in _JSON_COLORS:
         tmp = pygame.color.Color(str(_JSON_COLORS[color][shade]))
         # print tmp
         MATERIAL_COLORS[color][shade] = (tmp[0], tmp[1], tmp[2])
-
 MATERIAL_COLORS['CLOUD'] = (236, 240, 241)
 MATERIAL_COLORS['ASPHALT'] = (52,  73,  94)
 COLORS = MATERIAL_COLORS
-
-# pprint(MATERIAL_COLORS)
-
-
-CLOCK_DIRTY = False
-
-
-
-
-
-
-
-
-
-
-
-
-validator = Validator()
-
-# try:
-configspec = ConfigObj(CONFIG_SPEC, interpolation=False, list_values=True,
-                       _inspec=True)
-_CONFIG = ConfigObj(CONFIG_FILE, configspec=configspec)
-
-result = _CONFIG.validate(validator)
-if result != True:
-    print 'Config file validation failed!'
-    pprint(result)
-pygame.font.init()
 
 
 
@@ -112,6 +128,8 @@ BORDER = _CONFIG['title_banner']['BORDER']
 CORNER_RADIUS = _CONFIG['title_banner']['CORNER_RADIUS']
 SHADING_ITERATIONS = _CONFIG['title_banner']['SHADING_ITERATIONS']
 
+BANNNER_ICON_SIZE = _CONFIG['title_banner']['BANNNER_ICON_SIZE']
+
 SCREEN_TIMEOUT = _CONFIG['settings']['screen_timeout']
 
 
@@ -154,18 +172,16 @@ ICONS = icon(ICON_FONT_JSON, ICON_FONT_FILE)
 # SCREEN BANNER VARIABLES
 ###################################
 
+LOADING_MESSEGES = []
+TREKNOBABBLE = 'treknobabble.sqlite'
 
-LOADING_MESSEGES = [
-    "Creating Time-Loop Inversion Field",
-    "Loading next loading message",
-    "Randomizing memory access",
-    "Tube Clamp Error",
-    "Priming reagents",
-    "Testing CP function",
-    "Homing",
-    "Running Enhanced clean on all probes"
-]
+_TREKNOBABBLE = os.path.join('resources/', TREKNOBABBLE)
+tb_db = SqliteDict(_TREKNOBABBLE)
+# for item in dict_db.iteritems():
+    # pprint(item)
 
+for key, value in tb_db.iteritems():
+    LOADING_MESSEGES.append(value)
 
 # Set up some custom events
 TFTBUTTONCLICK = pygame.USEREVENT + 1
@@ -176,14 +192,6 @@ SLEEPEVENT = NEWSCREEN + 1
 SWIPE_UP = SLEEPEVENT + 1
 SWIPE_DOWN = SWIPE_UP + 1
 TIME_CHANGED = SWIPE_DOWN + 1
-
-# print "return event"
-# print RETURN_EVENT
-# print "---------------"
-#############################################################################
-
-##############################################################################
-# Call back functions for TFT Buttons
 
 def TFTBtn1Click(channel):
     tftscreen.backlight_off()

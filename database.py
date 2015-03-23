@@ -1,35 +1,110 @@
+import os
 from tinydb import TinyDB, where
+import inspect
+# from tinydb.middlewares import CachingMiddleware
+# from tinydb.storages import MemoryStorage, JSONStorage
+from tinyrecord import transaction
 from time import time, mktime, strftime, localtime
 import datetime
-from global_variables import DATABASE_SETTINGS
+from global_variables import DATABASE_SETTINGS, ROWS
 from pprint import pprint
+from sqlitedict import SqliteDict
+from prettytable import PrettyTable
+
+
+from metrics import profile, print_prof_data
 
 
 class tiny_db():
 
     def __init__(self):
-        self.db = TinyDB(DATABASE_SETTINGS['database'])
+        self.debug = True
+        self.dict_db = SqliteDict('./racks.sqlite', autocommit=True)
+        self.days_to_keep = 5
+        self._define_mem_db()
+        # SET UP DATABASE VARIABLES
         self.row_height = DATABASE_SETTINGS['rows']
         self.column_width = DATABASE_SETTINGS['columns']
-        
         self.get_last_filed()
-        
-        self.mem_db = []
-        self.list_all()
-        
-        # self.tables = []
-        # for item in self.db.tables():
-        #     self.tables.append(item)
-        
-            
-        
-        self.rack_day = None
-        self.next={}
+        self.rack_day = self._today()
+        self.next = {}
+        self._today()
         self.next_location()
-        
-        
-        # self.table = self.db.table('table_name')
+        self._db_info()
+        if self.last_filed is None:
+            try:
+                self._convert_to_sqlitedb()
+            except:
+                print "Database is Empty"
 
+
+    @profile
+    def _define_mem_db(self):
+        self.mem_db = []
+        for item in self.dict_db.iteritems():
+            self.mem_db.append(item[1])
+
+    @profile
+    def _db_info(self):
+        if len(self.mem_db) > 0:
+            x = PrettyTable([" ", "size"])
+            x.add_row(["DB Size", len(self.dict_db)])
+            x = PrettyTable(["stats", "accn", "Date", "Timestamp"])
+            # pprint(self.last_filed)
+            readable = self._conv_timestamp(self.last_filed['time'])
+            x.add_row(["Last",
+                       self.last_filed['accn'],
+                       readable,
+                       self.last_filed['time']])
+            first_filed = self.get_first_filed()
+            other_readable = self._conv_timestamp(first_filed['time'])
+            x.add_row(["First",
+                       first_filed['accn'],
+                       other_readable,
+                       first_filed['time']])
+            # print x
+            return x
+
+    def _list_size(self):
+        size = {'memory': len(self.mem_db), 'disk': len(self.dict_db)}
+        return  size
+    def _print_database(self):
+        if len(self.mem_db) < 2:
+            return none
+        x = PrettyTable(["Accn", "Rack", "Position", "Time", "Timestamp"])
+        # x.padding_width = 1
+        for item in self.mem_db:
+            x.add_row(self._make_entry_row(item))
+        # print x.get_string(sortby="Timestamp")
+        f = open('_database_info.txt', 'w')
+        f.write(x.get_string(sortby="Timestamp"))
+        f.write(self._db_info().get_string())
+        f.close()
+        print x.get_string(fields=["Accn", "Rack", "Position"])
+
+    def _make_entry_row(self, item):
+        readable = self._conv_timestamp(item['time'])
+        # print item['row']
+        x = [item['accn'],
+             item['rackDay'] + ' ' + str(item['rack']),
+             ROWS[str(item['row'])] + ' ' + str(item['column']),
+             readable,
+             item['time']]
+        return x
+
+    def _conv_timestamp(self, ts):
+        dt = datetime.datetime.fromtimestamp(float(ts))
+        return dt.strftime("%H:%M - %m.%d.%Y")
+
+    def _today(self):
+        self.purge_date = int(
+            mktime(
+                (datetime.date.today() -
+                 datetime.timedelta(
+                    self.days_to_keep)).timetuple()))
+        return strftime('%a', localtime(time()))
+
+    @profile
     def file_accn(self, accn):
         insert = {
             'accn': accn,
@@ -37,57 +112,57 @@ class tiny_db():
             'rackDay': self.next['rackDay'],
             'column': self.next['column'],
             'row': self.next['row'],
-            'time': time()
+            'time': str(time())
         }
-        # this does a few thigns:
-        # 	First it inserts he item, and returns an eid
-        # 	that eid is used to then get what it just inserted.
-        # 	then that dict is put into last filed
-        print "-----------------------"
-        print "starting to file accn"
         self.mem_db.append(insert)
-        print "written to memory"
-        self.db.insert(insert)
-        print "written to disk"
         self.last_filed = insert
-        print "last filed updated"
+        self.dict_db[insert['time']] = insert
         self.next_location()
-        print "next location updated"
-        print "======================="
 
+    @profile
     def get_last_filed(self):
-        # db.all returns a list of every tube,
-        # the [-1] will print the last item in the list,
-        # which should be the last tube filed
-        print "---Last Filed---"
-        try:
-            self.last_filed = self.db.all()[-1]
-            pprint(self.last_filed)
-        except:
-            self.last_filed = None
-            # print "Last Filed is None"
-        pprint(self.last_filed)
-        print "---end last filed---"
+        _last_filed_id = None
+        self.last_filed = None
+        for item in self.mem_db:
+            if _last_filed_id < item['time']:
+                _last_filed_id = item['time']
+                self.last_filed = item
         return self.last_filed
 
+    @profile
+    def get_first_filed(self):
+        # if len(self.mem_db) == 1:
+            # return self.last_filed
+        # else:
+        # print self.last_filed
+        if self.last_filed is None:
+            return self.last_filed
+        else:
+            _smallest_id = self.last_filed['time']
+            first_filed = None
+            for item in self.mem_db:
+                if item:
+                    # print item
+                    if _smallest_id > item['time']:
+                        # print "smaller"
+                        _smallest_id = item['time']
+                        first_filed = item
+                # print first_filed
+                return first_filed
+
+    @profile
     def new_day(self):
-        # print('creating new rack')
-        today = strftime('%a', localtime(time()))
         self.next['column'] = 1
         self.next['rack'] = 1
         self.next['row'] = 1
-        self.next['rackDay'] = today
+        self.next['rackDay'] = self._today()
 
+    @profile
     def next_location(self):
-        # print "running next location"
-        today = strftime('%a', localtime(time()))
-        # print today
         if self.last_filed is None:
             self.new_day()
             return
-        # pprint (self.last_filed)
-        if self.last_filed['rackDay'] != today:
-            # print "creating new day"
+        if self.last_filed['rackDay'] != self._today():
             self.new_day()
         elif self.last_filed['column'] == self.column_width:
             if self.last_filed['row'] == self.row_height:
@@ -102,69 +177,91 @@ class tiny_db():
             self.next['column'] = self.last_filed['column'] + 1
             self.next['rack'] = self.last_filed['rack']
             self.next['row'] = self.last_filed['row']
-        self.next['rackDay'] = today
-        print "--- next location ---"
-        pprint(self.next)
-        print "--- end of next location ---"
+        self.next['rackDay'] = self._today()
 
-
-    def print_properties(self):
-        print self.last_filed
-        print self.next_column
-        print self.next_row
-        print self.next_rack
-        print self.rack_day
-
-    def purge_old(self):
-        purge = []
-        keep = []
-        twoDaysAgo = int(mktime((datetime.date.today() - datetime.timedelta(2)).timetuple()))
-        for item in self.db.all():
-            print item.eid
-            if item['time'] < twoDaysAgo:
-                print "removing: " + str(item['accn'])
-                purge.append(item.eid)
-            else:
-                self.mem_db.append(item)
-                keep.append(item.eid)
-        # self.db.remove(eids=purge)
-        # self.last_filed = self.db.get(eid=max(keep))
-        print "last id " + str(max(keep))
-        return self.mem_db
-            
-        
+    @profile
     def find_accn(self, accn):
-        print "looking for: " + str(accn)
-        # testTime = 1422225306.907
-        twoDaysAgo = int(
-            mktime(
-                (datetime.date.today() - datetime.timedelta(2)).timetuple()))
-        print "found the date of two days ago"
-        # So this will check for accn and compare time
-        # Returning only values that after two days ago
-        print "starting search"
         result = []
         for item in self.mem_db:
             if item['accn'] == accn:
                 result.append(item)
-        
-        # result = self.db.search((where('accn') == accn))
-        print "finished search"
-        pprint(result)
         return result
 
-    def list_all(self):
-        for item in self.db.all():
-            print str(item.eid) + " " + str(item['accn'])
-            self.mem_db.append(item)
-        return self.mem_db
-        
+    @profile
+    def _convert_to_sqlitedb(self):
+        old_db = TinyDB(DATABASE_SETTINGS['database'])
+        self.mem_db = []
+        total = 0
+        for table in old_db.tables():
+            for item in old_db.table(table).all():
+                total += 1
+        print "MIGRATING DATABASE"
+        print "--OLD DATABASE: " + str(total)
+        i = 0
+        for table in old_db.tables():
+            for item in old_db.table(table).all():
+                if len(item['accn']) < 15:
+                    if int(item['time']) > self.purge_date:
+                        self.mem_db.append(item)
+                        print "   Converted:   " + str(i) + " of " + str(total)
+                        i += 1
+                        self.dict_db[str(item['time'])] = item
+                    else:
+                        print "REMOVING OLD THING"
+        print "DATABASE MIGRATION COMPLETE"
+        print "COMMITING CHANGES"
+        self.get_last_filed()
+
+    @profile
+    def clean(self):
+        print "HARD STORAGE: " + str(len(self.dict_db))
+        print "Mem:  " +str(len(self.mem_db))
+        self.mem_db = []
+        for item in self.dict_db.iteritems():
+            if item[1]['time'] < self.purge_date:
+                del self.dict_db[item[0]]
+        self._define_mem_db()
+        print "HARD STORAGE: " + str(len(self.dict_db))
+        print "Mem:  " +str(len(self.mem_db))
+
 RACK_DB = tiny_db()
 
-
 if __name__ == '__main__':
-    import timeit
-    # RACK_DB.purge_old()
-    # RACK_DB.list_all()
-    pprint(RACK_DB.get_last_filed())
+    import random
 
+    def populate(n):
+        while n > 0:
+            for x in range(1, 8):
+                for y in range(100):
+                    fake = "%02d%05d" % (x, y,)
+                    if n > 0:
+                        n -= 1
+                        RACK_DB.file_accn(fake)
+                    else:
+                        return
+
+    def find_random(n):
+        sample = []
+        for item in RACK_DB.mem_db:
+            sample.append(item)
+        mem_nf = 0
+        nf = 0
+        for item in random.sample(sample, n):
+            if len(RACK_DB.find_accn(item)) > 0:
+                print "found in memory"
+            else:
+                nf += 1
+            if len(RACK_DB.find_accn_mem(item)) > 0:
+                print "found with database"
+            else:
+                mem_nf += 1
+        print "mem_nf: " + str(mem_nf)
+        print "nf: " + str(nf)
+
+    # RACK_DB._convert_to_sqlitedb()
+    # populate(50)
+    # find_random(10)
+    RACK_DB._print_database()
+    RACK_DB._db_info()
+    print_prof_data()
+    RACK_DB.clean()

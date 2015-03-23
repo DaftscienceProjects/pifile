@@ -7,7 +7,7 @@ from time import strftime, localtime
 from PIL import ImageDraw, ImageFont
 from global_variables import COLORS, ROWS, ICON_FONT_FILE, ICONS, SHADING_ITERATIONS
 from global_variables import ICON_FONT_JSON, REBUILD_BANNER, CORNER_RADIUS
-from global_variables import SHADING_QUALITY, BACKGROUND_COLOR, BORDER
+from global_variables import SHADING_QUALITY, BACKGROUND_COLOR, BORDER, BANNNER_ICON_SIZE
 
 from pprint import pprint
 
@@ -51,6 +51,16 @@ class text_label(pygame.sprite.Sprite):
 
     def blit_text(self):
         # print self.color
+        # print self.font.get_sized_descender()  
+        
+        # pillfont = ImageFont.truetype(ICONS.font_location, 45)
+        # img = Image.new('RGBA', self.surface.get_size())
+        # draw = ImageDraw.Draw(img)
+        # getmask(text, mode='') 
+        # draw.text((10, 25), "world", font=pillfont)
+        # img.show()
+
+
         self.label = self.font.render(self.text, 1, self.color)
         # get the size of the text object
         self.fontRect = self.label.get_rect()
@@ -82,8 +92,6 @@ class title_banner(text_label):
     def __init__(self, *args, **kwargs):
         self.title_icon = kwargs['title_icon']
         super(title_banner, self).__init__(*args, **kwargs)
-        # self.icons = parseIcons.icon(ICON_FONT_JSON, ICON_FONT_FILE)
-        # print "initialized title_text class"
         self.surface.get_size()
         self.blit_text()
         self.banner_location = kwargs['banner_location']
@@ -106,7 +114,6 @@ class title_banner(text_label):
             shadow=False)
 
         self.rect = self.surface.get_rect()
-        # self.add_text()
 
         self.pygameImage = pygame.image.fromstring(
             self.banner.image.tostring(),
@@ -115,30 +122,20 @@ class title_banner(text_label):
             False).convert_alpha()
         pygame.image.save(self.pygameImage, self.banner_location)
 
-    # def add_text(self):
-        # print self.title_icon
-        # icon_unicode = ICONS.unicode(self.title_icon)
-        # self.fa = ImageFont.truetype(ICONS.font_location, 33)
-        # text = ImageDraw.Draw(self.banner.image)
-        # image_width, image_height = text.textsize(icon_unicode, font=self.fa)
-        # surface_width, surface_height = self.surface.get_size()
-        # text.text(
-        # (35,
-        # (surface_height - image_height) / 2),
-        # icon_unicode,
-        # font=self.fa)
-        # self.banner.image.show()
 
     def update(self):
         self.surface.blit(self.pygameImage, (0, 0))
+        # pygame.draw.rect(self.surface, (0,0,0), self.fontRect, 1)
+        
+        self.fontRect.top = self.fontRect.top + 4
         self.surface.blit(self.label, self.fontRect)
 
-        fa = pygame.font.Font(ICONS.font_location, 45)
+        fa = pygame.font.Font(ICONS.font_location, BANNNER_ICON_SIZE)
         icon = fa.render(ICONS.unicode(self.title_icon), 1, self.color)
 
         icon_rect = icon.get_rect()
         icon_rect.centerx = self.fontRect.left / 2
-        icon_rect.centery = self.fontRect.centery
+        icon_rect.centery = self.fontRect.centery - 4
 
         self.surface.blit(icon, icon_rect)
 
@@ -344,27 +341,18 @@ class rounded_rect():
             self.og_size[1] *
             self.quality)
         self.width, self.height = self.size
-        if shadow:
-            self.image = self.round_rectangle()
-        else:
-
-               # REBUILD_BANNER = False
-            # BORDER = 3
-            # SHADING_QUALITY = 2
-            # CORNER_RADIUS = 2
-            # SHADING_ITERATIONS = 20
-            # def makeShadow( image, offset=(5,5), background=0xffffff, 
+        # if shadow:
+        self.image = self.round_rectangle()
+        # else:
+            # self.image = self.makeShadow(
+                # image=self.round_rectangle(),
+                # offset=(0 * SHADING_QUALITY, 0 * SHADING_QUALITY),
+                # background=self.background_color,
                 # shadow=0x444444,
-                    # border=8, iterations=3):
-
-            self.image = self.makeShadow(
-                image=self.round_rectangle(),
-                offset=(0 * SHADING_QUALITY, 0 * SHADING_QUALITY),
-                background=self.background_color,
-                shadow=0x444444,
-                border=self.border,
-                iterations=SHADING_ITERATIONS)
-        self.image = self.image.resize(self.og_size, resample=Image.LANCZOS)
+                # border=self.border,
+                # iterations=SHADING_ITERATIONS)
+        # self.image = self.image.resize(self.og_size, resample=Image.LANCZOS)
+        self.image = self.image
 
     def round_corner(self):
         """Draw a round corner"""

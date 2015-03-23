@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 # import pygameui
 import pygame
 from time import strftime, localtime, time, sleep
@@ -10,7 +11,6 @@ from database import RACK_DB
 from button import button
 sys.dont_write_bytecode = True
 
-print "test"
 # For more information on the variables and functions in this file view
 # displayscreen.py in the root folder of this project
 
@@ -26,15 +26,18 @@ class myScreen(PiInfoScreen):
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
         
+        self.vkey_surface = pygame.display.get_surface()
+        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
+
+        self.default_message = "Please use caution\nEnter: 'F1' to optimize database"
         self.setting_visible = False
         self.clock_dirty = False
         self.minus = ICONS.unicode('down-open')
         self.plus = ICONS.unicode('up-open')
         self.surface.fill(COLORS['CLOUD'])
-        self.hint_text.string = "settings are disabled"
+        self.hint_text.string = self.default_message
         self.title.update()
         self.adjust_time = change_time()
-# pygame.font.Font(ICONS.font_location, 45)
         self.button_settings = {
             # 'hover': COLORS['BLUE-GREY']['200'],
             'hover': COLORS['BLUE-GREY']['100'],
@@ -46,6 +49,7 @@ class myScreen(PiInfoScreen):
             'fontsize': 18,
             'surface': self.surface
         }
+
         button_width = 100
         button_height = 30
         margin = 5
@@ -155,7 +159,6 @@ class myScreen(PiInfoScreen):
             command=self.dec_day,
             **self.button_settings)
         self.dec_day_btn.rect.center = (x, y)
-
         self.buttons = [
             self.inc_hour_btn,
             self.inc_day_btn,
@@ -163,6 +166,66 @@ class myScreen(PiInfoScreen):
             self.dec_min_btn,
             self.dec_day_btn,
             self.dec_hour_btn]
+
+
+        self.shell_commands = {
+            'backup': 'cp racks.sqlite racks.sqlite.bak',
+            'update': 'git pull',
+            'restart': "sudo reboot -n"
+        }
+        self.commands = {
+            'F1': self.clean_database,
+            'F2': self.database_size,
+            'F123': self.apply_patch
+        }
+    def apply_patch(self):
+        message = "Starting Update..."
+        self.update_message(message)
+        message +="\n -Backing up database"
+        sleep(2)
+        self.update_message(message)
+        subprocess.call(self.shell_commands['backup'], shell=True)
+        sleep(1)
+        message +="\n -Downloading patch"
+        self.update_message(message)
+        subprocess.call(self.shell_commands['update'], shell=True)
+        sleep(1)
+        self.update_message('Update Complete\nRestarting now')
+        sleep(2)
+        subprocess.call(self.shell_commands['restart'], shell=True)
+
+
+
+
+
+
+
+
+
+    def update_message(self,msg):
+        self.hint_text.string = msg
+        self.hint_surface.blit(self.hint_text.update(), (0, 0))
+        self.clock.text = ' '
+        self.clock.update()
+        self.screen.blit(self.surface, (0, 0))
+        pygame.display.flip()
+
+    def database_size(self):
+        text = 'DATABASE SIZE\n'
+        tmp = RACK_DB._list_size()
+        for key in tmp:
+            text += key + ': ' + str(tmp[key]) + '\n'
+        self.update_message(text)
+
+
+        # self.update_message(RACK_DB._db_info())
+        # sleep(10)
+
+    def clean_database(self):
+        self.update_message("PURGING DATABASE\nThis might take some time, please don't discconect power.")
+        RACK_DB.clean()
+        self.hint_text.string = "Finished Optomizing\nIt's now safe to leave this screen"
+
 
     def inc_min(self):
         self.adjust_time.change("minutes", 1)
@@ -189,22 +252,27 @@ class myScreen(PiInfoScreen):
         # print('running callback 2')
 
     def event_handler(self, event):
-        return
-        if event.type == SWIPE_UP and self.setting_visible == False:
-            # self.setting_visible = True
-            return
-        if event.type == SWIPE_DOWN:
-            self.setting_visible = False
-            self.exit_function()
-            return
+        if event.type == SWIPE_UP:
+            self.dirty = True
+            tmp = self.vkey.run('')
+            # try:
+            self.run_command(tmp)
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            for b in self.buttons:
-                if b.get_event(event):
-                    pygame.time.Clock()
-                    self.clock_dirty = True
-        else:
-            return
+        if event.type == KEYDOWN and event.key == K_RETURN:
+            accn = self.barcode_input.value
+            # if accn != '':
+                # self.dirty = True
+                # print accn
+
+
+    def run_command(self, command):
+        if command in self.shell_commands:
+            subprocess.call(self.shell_commands[command], shell=True)
+        if command in self.commands:
+            self.commands[command]()
+    
+
+
     def show_settings(self):
         self.hint_surface.fill(COLORS['CLOUD'])
         self.hour.update()
@@ -232,29 +300,4 @@ class myScreen(PiInfoScreen):
             return self.screen
 
     def exit_function(self):
-        self.setting_visible = False
-        self.screen.fill(COLORS['CLOUD'])
-        for b in self.buttons:
-            b.clear()
-        self.screen.blit(self.surface, (0,0))
-        if self.clock_dirty:
-            print "clock is dirty"
-            self.screen.fill(COLORS['CLOUD'])
-            self.title.update()
-            self.screen.blit(self.title.surface, self.title.rect)
-            self.hint_text.string = "Saving..."
-            self.clock.text = strftime("%H:%M", localtime(time()))
-            self.clock.update()
-            self.hint_surface.blit(self.hint_text.update(), (0, 0))
-            self.title.update()
-            self.title.update()
-            self.screen.blit(self.hint_surface, self.hint_rect)
-            pygame.display.update()
-            sleep(2)
-            os.popen("hwclock -w", 'r', 1)
-            self.hint_surface.fill(COLORS['CLOUD'])
-            self.hint_text.string = "Swipe to adjust time\n Swipe horizontally to exit"
-            self.screen.blit(self.hint_surface, self.hint_rect)
-            self.clock_dirty = False
-        else:
-            return
+        self.hint_text.string = self.default_message

@@ -3,6 +3,7 @@ import pygame
 import gui_objects
 from time import strftime, localtime, time
 from pprint import pprint
+from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
 from global_variables import COLORS, ICONS, SCREEN_TIMEOUT
 from displayscreen import PiInfoScreen
@@ -28,10 +29,10 @@ class myScreen(PiInfoScreen):
 
         self.vkey_surface = pygame.display.get_surface()
         # self.vkey_surface = self.surface.copy()
-        self.vkey = VirtualKeyboard(self.vkey_surface)
+        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
         self.timer = False
         self.timeout = 0
-        self.timeout_delay = SCREEN_TIMEOUT * 60 # in seconds
+        self.timeout_delay = SCREEN_TIMEOUT * 60  # in seconds
         self.new_result = False
 
         self.surface.fill(COLORS['CLOUD'])
@@ -39,12 +40,12 @@ class myScreen(PiInfoScreen):
         self.title.update()
         self.hint_surface.blit(self.hint_text.update(), (0, 0))
 
-
         self.barcode_input = Input()
         RACK_DB.next_location()
 
-        self.icon_font = pygame.font.Font(ICONS.font_location, 50)  # keyboard font
-
+        self.icon_font = pygame.font.Font(
+            ICONS.font_location,
+            50)  # keyboard font
 
         # This is the box where location results go
         self.result_rect = pygame.Rect(0, 120, 320, 90)
@@ -107,14 +108,15 @@ class myScreen(PiInfoScreen):
         accn = ''
         if event.type == SWIPE_UP:
             accn = self.vkey.run('')
-            self.accn_box.text = "Accn#: "+ str(accn)
+            self.accn_box.text = "Accn#: " + str(accn)
         elif event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
-            self.barcode_input.value=''
+            self.barcode_input.value = ''
             if accn != '':
-                self.accn_box.text = "Accn#: "+ str(accn)
+                self.accn_box.text = "Accn#: " + str(accn)
                 # RACK_DB.file_accn(accn)
-        else: self.barcode_input.update(event)
+        else:
+            self.barcode_input.update(event)
         if accn != '':
             self.new_result = True
             self.reset()
@@ -150,6 +152,8 @@ class myScreen(PiInfoScreen):
 
     def update_locations(self):
         pass
+    def exit_function(self):
+        self.dirty = True
 
     def showScreen(self):
         if self.timer:
@@ -158,7 +162,8 @@ class myScreen(PiInfoScreen):
                     self.new_result = False
                     # NOT FOUND
                     if self.info1.text == "sorry, not found":
-                        self.result_surface.blit(self.result_text.update(), (0, 0))
+                        self.result_surface.blit(
+                            self.result_text.update(), (0, 0))
                         self.accn_box.update()
                         pass
                     else:

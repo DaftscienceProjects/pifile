@@ -1,3 +1,10 @@
 *.json
 *.pyc
 *.png
+logger.log
+logger.py
+db.json
+*.json
+*.img
+*.sqlite
+*.bak

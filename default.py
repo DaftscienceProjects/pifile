@@ -5,9 +5,11 @@ import os
 import random
 import traceback
 from global_variables import *
+from database import RACK_DB
 from time import time, sleep
 from keyboard import VirtualKeyboard
 sys.dont_write_bytecode = True
+from gui_objects import render_textrect
 
 debug = True
 screensleep = 60000
@@ -20,6 +22,7 @@ RASPBERRYPI = False
 # Tell the RPi to use the TFT screen and that it's a touchscreen device
 if os.name == 'posix':
     RASPBERRYPI = True
+    # RASPBERRYPI = True
     print "You're running raspberry pi"
     # Hide mouse
     from pitftgpio import PiTFT_GPIO
@@ -44,7 +47,7 @@ if RASPBERRYPI:
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
-FPS = 10
+FPS = 24
 clock = pygame.time.Clock()
 screenindex = 0
 
@@ -154,23 +157,44 @@ def showWelcomeScreen():
     # sleep(.5)
 
 
+
+message_rect = screen.get_rect()
+message_text = render_textrect(
+    string="loading",
+    font=loading_font,
+    rect=message_rect,
+    text_color=COLORS['CLOUD'],
+    background_color=COLORS['CLOUD'],
+    justification=1,
+    FontPath=FONTS['swipe_font']['path'],
+    cutoff=False,
+    margin = (5,5),
+    MinFont=FONTS['swipe_font']['size'] - 4,
+    MaxFont=FONTS['swipe_font']['size'],
+    shrink=True,
+    vjustification=1)
+
 def showLoadedPlugin(plugin):
     '''Display a temporary screen to show when a module is successfully
     loaded.
     '''
-    # pass
-    # print "showloadedplugin"
     message = random.choice(LOADING_MESSEGES)
     LOADING_MESSEGES.remove(message)
 
-    screen.fill(COLORS['CLOUD'])
-    label = loading_font.render(message, 1, plugin.color)
-    labelpos = label.get_rect()
-    labelpos.centerx = screen.get_rect().centerx
-    labelpos.centery = screen.get_rect().centery
-    screen.blit(label, labelpos)
+
+    tmp = message.split(' ', -1)
+    first_word = tmp[1]
+    if not first_word.endswith('e'):
+        first_word += 'ing'
+    else:
+        first_word = tmp[1][:-1] + 'ing'
+    tmp[1] = first_word
+
+    message_text.string = " ".join(tmp)
+    message_text.text_color = plugin.color
+    screen.blit(message_text.update(), (0,0))
     pygame.display.flip()
-    sleep(2)
+    sleep(.1)
 
 
 def setNextScreen(a, screenindex):
@@ -190,25 +214,6 @@ def setNextScreen(a, screenindex):
 
 
 def displayLoadingScreen(a):
-    # '''Displays a loading screen.'''
-
-    # -----------KEEP THIS!!!--------------
-    # It may be needed if screens take too long to loading
-    # ---------------------------------------------
-    # screen.fill(COLORS['CLOUD'])
-
-    # holdtext = myfont.render("Loading screen: %s"
-                            # % pluginScreens[a].screenName(),
-                            # 1,
-                            # (255,255,255))
-    # holdrect = holdtext.get_rect()
-    # holdrect.centerx = screen.get_rect().centerx
-    # holdrect.centery = screen.get_rect().centery
-    # screen.blit(holdtext, holdrect)
-    # pygame.display.flip()
-    # NEWSCREEN()
-    # NEWSCREEN()
-    # pygame.time.set_timer(NEWSCREEN, 1)
     pass
 
 
@@ -242,6 +247,8 @@ PluginScript = "screen.py"
 MainModule = "screen"
 pluginScreens = []
 
+if RASPBERRYPI:
+    tftscreen.backlight_med()
 
 # Set our screen size
 # Should this detect attached display automatically?
@@ -302,90 +309,21 @@ def getSwipeType():
     x_up, y_up = mouseUpPos
     x = x_up - x_down
     y = y_up - y_down
-
-
-    print x
-    print y
-    # y_swipe = 0
-    # x_swipe = 0
     swipe = 0
 
     if abs(x) < minSwipe and abs(y) < minSwipe:
-        print "Click"
         return 0
     if abs(x) < abs(y):
         if y > 0:
-            # print "swipe down"
             return 3
         if y < 0:
-            print y
-            # print "swipe up"
             return 4
     if abs(y) < abs(x):
         if x > 0:
-            print x
-            # print "swipe right"
             return 1
         if x < 0:
-            # print "swipe left"
-            print x
             return 2
-    # print "nothing"
     return 0
-# def getSwipeType():
-#     x, y = pygame.mouse.get_rel()
-#     print abs(x)
-#     print abs(y)
-#     y_swipe = 0
-#     x_swipe = 0
-#     swipe = 0
-#     if abs(x) <= minSwipe:
-#         if abs(y) <= minSwipe:
-#             if abs(x) < maxClick and abs(y) < maxClick:
-#                 print "click"
-#                 # pygame.mouse.set_pos(0, 0)
-#                 return 0
-#             else:
-#                 # not detected as a swipe or click
-#                 print "not a swipe or a click"
-#                 # y_swipe = -1
-#                 return -1
-#         elif y > minSwipe:
-#             print "vertical 3"
-#             y_swipe = 3
-#         elif y < -minSwipe:
-#             # pygame.mouse.set_pos(0, 0)
-#             print "vertical 4"
-#             y_swipe = 4
-#         else:
-#             print "first wtf"
-#     if abs(y) <= minSwipe:
-#         if x > minSwipe:
-#             # pygame.mouse.set_pos(0, 0)
-#             print "horizontal 1"
-#             x_swipe = 1
-#         elif x < -minSwipe:
-#             # pygame.mouse.set_pos(0, 0)
-#             print "horizontal 2"
-#             x_swipe = 2
-#         else: print "second wtf"
-#     print (x_swipe)
-#     print (y_swipe)
-#     if x_swipe == 0:
-#         print "returning y_swipe " + str(y_swipe)
-#         return y_swipe
-#     elif y_swipe == 0:
-#         print "returning x_swipe " + str(x_swipe)
-#         return x_swipe
-#     elif abs(x) > abs(y):
-#         print "returning x_swipe " + str(x_swipe)
-#         return x_swipe
-#     else:
-#         print "returning y_swipe " + str(y_swipe)
-#         return y_swipe
-
-#     print "nothing cought"
-#     return 0
 
 
 def longPress(downTime):
@@ -402,31 +340,19 @@ displayLoadingScreen(screenindex)
 while not quit:
     for event in pygame.event.get():
         # Handle quit message received
-	if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-		quit = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+            quit = True
+        # RACK_DB.list_all()
         if event.type == pygame.QUIT:
             quit = True
-        # if event.type == TIME_CHANGED:
-            # print "time Changed"
-            # pygame.time.Clock()
-            # continue
-        # send the event to the current screenindex
-        # this allows user interaction without interfering with
-        # swipe gestures
-        # 'Q' to quit
-
         # mouse button pressed
         if (event.type == pygame.MOUSEBUTTONDOWN):
-            print "mouse_down"
             mouseDownTime = pygame.time.get_ticks()
             mouseDownPos = pygame.mouse.get_pos()
             # pygame.mouse.get_rel()
-
         if (event.type == pygame.MOUSEBUTTONUP):
-            print "mouse_up"
             mouseUpPos = pygame.mouse.get_pos()
             swipe = getSwipeType()
-            print "Swipe: " + str(swipe)
             # print "Screen Index Before: " + str(screenindex)
             if swipe == 1:
                 pluginScreens[screenindex].exit_function()
@@ -438,6 +364,7 @@ while not quit:
                 # clock = pygame.time.Clock()
                 continue
             elif swipe == 3:
+                pluginScreens[screenindex].exit_function()
                 tmp_event = pygame.event.Event(SWIPE_DOWN, value=1)
                 pluginScreens[screenindex].event_handler(tmp_event)
                 continue
@@ -446,24 +373,20 @@ while not quit:
             elif swipe == 4:
                 # vkey = VirtualKeyboard(screen)
                 # tmp = vkey.run('')
+                pluginScreens[screenindex].exit_function()
                 tmp_event = pygame.event.Event(SWIPE_UP, value=1)
                 pluginScreens[screenindex].event_handler(tmp_event)
                 continue
             # print "Screen Index After: " + str(screenindex)
-
         if (event.type == TFTBUTTONCLICK):
             if (event.button == 1):
                 pluginScreens[a].Button1Click()
-
             if (event.button == 2):
                 pluginScreens[a].Button2Click()
-
             if (event.button == 3):
                 pluginScreens[a].Button3Click()
-
             if (event.button == 4):
                 pluginScreens[a].Button4Click()
-
         if (event.type == NEWSCREEN):
             showNewScreen()
         pluginScreens[screenindex].event_handler(event)
@@ -473,8 +396,9 @@ while not quit:
     # if CLOCK_DIRTY == True:
         # clock = pygame.time.Clock()
         # CLOCK_DIRTY = False
-    
+
     clock.tick(FPS)
+    # clock.tick()
     pygame.display.flip()
 
 # If we're here we've exited the display loop...
