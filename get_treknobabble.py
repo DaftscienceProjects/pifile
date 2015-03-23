@@ -38,7 +38,7 @@ def get_tb():
                 duplicates += 1
         treknobabble.append(failure)
 
-get_tb()
+# get_tb()
 
 for item in dict_db.iteritems():
     pprint(item)
@@ -46,17 +46,3 @@ for item in dict_db.iteritems():
 print len(dict_db)
 dict_db.close()
 
-
-# print "Dups: " + str(duplicates)
-# f = open('treknobable.txt', 'w')
-# f.write(x.get_string(sortby="Timestamp"))
-# for thing in treknobabble:
-    # pprint(thing)
-    # for key in thing:
-    # f.write('\n' + '----------\n')
-    # f.write(key + '\n')
-    # f.write(thing[key])
-    # print key
-    # print thing[key]
-    # print "---"
-# f.close()

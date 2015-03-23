@@ -6,3 +6,4 @@ logger.py
 db.json
 *.json
 *.img
+*.sqlite

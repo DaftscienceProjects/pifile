@@ -11,7 +11,6 @@ from database import RACK_DB
 from button import button
 sys.dont_write_bytecode = True
 
-print "test"
 # For more information on the variables and functions in this file view
 # displayscreen.py in the root folder of this project
 
@@ -170,13 +169,50 @@ class myScreen(PiInfoScreen):
 
 
         self.shell_commands = {
-            'backup': 'cp racks.sqlite ~/racks.sqlite',
+            'backup': 'cp racks.sqlite racks.sqlite.bak',
             'update': 'git pull',
             'restart': "reboot -now"
         }
         self.commands = {
-            'F1': self.clean_database
+            'F1': self.clean_database,
+            'F2': self.database_size,
+            'F123': self.apply_patch
         }
+    def apply_patch(self):
+        message = "Starting Update..."
+        self.update_message(message)
+        message +="\n -Backing up database"
+        sleep(2)
+        self.update_message(message)
+        subprocess.call(self.shell_commands['backup'], shell=True)
+        sleep(1)
+
+
+    def update_message(self,msg):
+        self.hint_text.string = msg
+        self.hint_surface.blit(self.hint_text.update(), (0, 0))
+        self.clock.text = ' '
+        self.clock.update()
+        self.screen.blit(self.surface, (0, 0))
+        pygame.display.flip()
+
+    def database_size(self):
+        text = 'DATABASE SIZE\n'
+        tmp = RACK_DB._list_size()
+        for key in tmp:
+            text += key + ': ' + str(tmp[key]) + '\n'
+        self.update_message(text)
+
+
+        # self.update_message(RACK_DB._db_info())
+        # sleep(10)
+
+    def clean_database(self):
+        self.update_message("PURGING DATABASE\nThis might take some time, please don't discconect power.")
+        RACK_DB.clean()
+        self.hint_text.string = "Finished Optomizing\nIt's now safe to leave this screen"
+
+
     def inc_min(self):
         self.adjust_time.change("minutes", 1)
         # print('running callback')
@@ -221,17 +257,6 @@ class myScreen(PiInfoScreen):
         if command in self.commands:
             self.commands[command]()
     
-    def clean_database(self):
-        self.hint_text.string = "CLEANING DATABASE...\nThis may take a while, please don't disconnect power"
-        self.hint_surface.blit(self.hint_text.update(), (0, 0))
-        self.clock.text = strftime("%H:%M", localtime(time()))
-        self.clock.update()
-        self.screen.blit(self.surface, (0, 0))
-        pygame.display.flip()
-        sleep(3)
-        RACK_DB.clean()
-        self.hint_text.string = "Finished Optomizing\nIt's now safe to leave this screen"
-
 
 
     def show_settings(self):

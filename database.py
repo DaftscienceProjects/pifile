@@ -62,9 +62,12 @@ class tiny_db():
                        first_filed['accn'],
                        other_readable,
                        first_filed['time']])
-            print x
+            # print x
             return x
 
+    def _list_size(self):
+        size = {'memory': len(self.mem_db), 'disk': len(self.dict_db)}
+        return size
     def _print_database(self):
         if len(self.mem_db) < 2:
             return none
@@ -211,14 +214,14 @@ class tiny_db():
 
     @profile
     def clean(self):
-        print "dict: " + str(len(self.dict_db))
+        print "HARD STORAGE: " + str(len(self.dict_db))
         print "Mem:  " +str(len(self.mem_db))
         self.mem_db = []
         for item in self.dict_db.iteritems():
             if item[1]['time'] < self.purge_date:
                 del self.dict_db[item[0]]
         self._define_mem_db()
-        print "dict: " + str(len(self.dict_db))
+        print "HARD STORAGE: " + str(len(self.dict_db))
         print "Mem:  " +str(len(self.mem_db))
 
 RACK_DB = tiny_db()

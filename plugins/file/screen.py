@@ -157,7 +157,7 @@ class myScreen(PiInfoScreen):
                 elif accn != RACK_DB.last_filed['accn']:
                     self.store(accn)
                 else:
-                    print "accn not filed"
+                    print "DUPLICATE ACCN - NOT FILED"
         self.barcode_input.update(event)
     def store(self, accn):
         self.dirty = True

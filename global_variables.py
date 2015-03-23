@@ -18,19 +18,11 @@ DEBUG = True
 CONFIG_FILE = 'config/settings.ini'
 CONFIG_SPEC = 'config/_config_validator.ini'
 
-PLUGIN_SPEC = 'config/_plugin_validator.ini'
+PLUGIN_VALIDATOR = 'config/_plugin_validator.ini'
 
 MATERIAL_COLORS = 'material_colors.json'
 
 
-
-table = [
-    ["Sun",696000,1989100000],
-    ["Earth",6371,5973.6],
-    ["Moon",1737,73.5],
-    ["Mars",3390,641.85]
-    ]
-print tabulate(table)
 
 config_results = []
 validator = Validator()
@@ -47,7 +39,7 @@ else:
     print "-config/settings.ini " + green('PASSED ') + "validation"
 
 
-configspec = ConfigObj(PLUGIN_SPEC, interpolation=False, list_values=True,_inspec=True)
+configspec = ConfigObj(PLUGIN_VALIDATOR, interpolation=False, list_values=True,_inspec=True)
 config_results = []
 # PLUGIN_FILES = []
 print "\nVALIDATING PLUGIN SETTINGS"
@@ -65,7 +57,7 @@ for root, dirnames, filenames in os.walk('./'):
             config_results.append([root+filename, green('PASSED')])
 
 print tabulate(config_results)
-pprint(errors)
+# pprint(errors)
 
 
 pygame.font.init()

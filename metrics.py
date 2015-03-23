@@ -9,11 +9,11 @@ PROF_DATA = {}
 def profile(fn):
     @wraps(fn)
     def with_profiling(*args, **kwargs):
-        print "ENTERING " + fn.__name__
+        # print "ENTERING " + fn.__name__
         start_time = time.time()
         ret = fn(*args, **kwargs)
         elapsed_time = time.time() - start_time
-        print "EXITING " + fn.__name__ + "Time: " + str(elapsed_time)
+        # print "EXITING " + fn.__name__ + "Time: " + str(elapsed_time)
         if fn.__name__ not in PROF_DATA:
             PROF_DATA[fn.__name__] = [0, []]
         PROF_DATA[fn.__name__][0] += 1

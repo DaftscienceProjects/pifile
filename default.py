@@ -193,7 +193,7 @@ def showLoadedPlugin(plugin):
     message_text.text_color = plugin.color
     screen.blit(message_text.update(), (0,0))
     pygame.display.flip()
-    sleep(1)
+    sleep(.4)
 
 
 def setNextScreen(a, screenindex):
