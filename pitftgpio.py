@@ -63,7 +63,7 @@ class PiTFT_GPIO(object):
     def __setupBacklight(self):
 
         set_pwm = 'gpio -g mode 18 pwm'
-        set_duty = 'gpio -g pwm 18 1000'
+        set_duty = 'gpio -g pwm 18 1023'
 
         subprocess.call(set_pwm, shell=True)
         subprocess.call(set_duty, shell=True)
