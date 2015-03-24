@@ -194,7 +194,7 @@ def showLoadedPlugin(plugin):
     message_text.text_color = plugin.color
     screen.blit(message_text.update(), (0,0))
     pygame.display.flip()
-    sleep(.1)
+    sleep(2)
 
 
 def setNextScreen(a, screenindex):
@@ -248,7 +248,7 @@ MainModule = "screen"
 pluginScreens = []
 
 if RASPBERRYPI:
-    tftscreen.backlight_med()
+    tftscreen.backlight_high()
 
 # Set our screen size
 # Should this detect attached display automatically?
