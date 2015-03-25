@@ -257,6 +257,7 @@ class myScreen(PiInfoScreen):
             tmp = self.vkey.run('')
             # try:
             self.run_command(tmp)
+            return
 
         if event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
