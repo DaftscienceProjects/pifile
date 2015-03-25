@@ -47,7 +47,7 @@ if RASPBERRYPI:
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
-FPS = 24
+FPS = 20
 clock = pygame.time.Clock()
 screenindex = 0
 
