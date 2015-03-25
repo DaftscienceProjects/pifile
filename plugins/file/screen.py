@@ -162,7 +162,7 @@ class myScreen(PiInfoScreen):
     def store(self, accn):
         self.dirty = True
         RACK_DB.file_accn(accn)
-        self.accn_box.text = "Last Filed: : " + accn
+        self.accn_box.text = "Last Filed: " + accn
         self.accn_box.update()
         self.update_indicator()
 
