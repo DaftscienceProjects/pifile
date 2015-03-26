@@ -3,8 +3,7 @@
 banner.png
 logger.log
 logger.py
-db.json
-*.json
+db.jsond
 *.img
 *.sqlite
 *.bak
