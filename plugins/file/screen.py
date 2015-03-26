@@ -144,9 +144,18 @@ class myScreen(PiInfoScreen):
             self.dirty = True
             tmp = self.vkey.run('')
             accn = tmp
-            if RACK_DB.last_filed:
-                if accn != '' and accn != RACK_DB.last_filed['accn']:
+            if accn != '':
+                self.dirty = True
+                if RACK_DB.last_filed == None:
                     self.store(accn)
+                elif accn != RACK_DB.last_filed['accn']:
+                    self.store(accn)
+                else:
+                    print "DUPLICATE ACCN - NOT FILED"
+            # if accn != '':
+            # if RACK_DB.last_filed:
+            #     if accn != '' and accn != RACK_DB.last_filed['accn']:
+            #         self.store(accn)
             return
         if event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
