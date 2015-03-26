@@ -176,8 +176,12 @@ class myScreen(PiInfoScreen):
         self.commands = {
             'F1': self.clean_database,
             'F2': self.database_size,
-            'F123': self.apply_patch
+            'F8': self.apply_patch,
+            'F22': self.quit
         }
+    def quit(self):
+        pygame.quit()
+
     def apply_patch(self):
         message = "Starting Update..."
         self.update_message(message)

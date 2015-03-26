@@ -17,33 +17,13 @@ screensleep = 60000
 # This is where we start
 # Initialise pygame
 
-RASPBERRYPI = False
-# pprint(pygame.di`play.list_modes(), 3)
-# Tell the RPi to use the TFT screen and that it's a touchscreen device
-if os.name == 'posix':
-    RASPBERRYPI = True
-    # RASPBERRYPI = True
-    print "You're running raspberry pi"
-    # Hide mouse
-    from pitftgpio import PiTFT_GPIO
-    os.putenv('SDL_VIDEODRIVER', 'fbcon')
-    os.putenv('SDL_FBDEV', '/dev/fb1')
-    os.putenv('SDL_MOUSEDRV', 'TSLIB')
-    os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
-    tftscreen = PiTFT_GPIO()
+
 ##############################################################################
 # Create a clock and set max FPS (This reduces a lot CPU ussage)
 pygame.init()
 # Screen size (currently fixed)
 size = width, height = 320, 240
 screen = pygame.display.set_mode(size)
-
-# Set up the callback functions for the buttons
-if RASPBERRYPI:
-    tftscreen.Button1Interrupt(TFTBtn1Click)
-    tftscreen.Button2Interrupt(TFTBtn2Click)
-    tftscreen.Button3Interrupt(TFTBtn3Click)
-    tftscreen.Button4Interrupt(TFTBtn4Click)
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
@@ -178,9 +158,13 @@ def showLoadedPlugin(plugin):
     '''Display a temporary screen to show when a module is successfully
     loaded.
     '''
-    message = random.choice(LOADING_MESSEGES)
+    found = False
+    message = ''
+    while not found:
+        message = random.choice(LOADING_MESSEGES)
+        if 'bomb' not in message:
+            found = True
     LOADING_MESSEGES.remove(message)
-
 
     tmp = message.split(' ', -1)
     first_word = tmp[1]
@@ -247,8 +231,7 @@ PluginScript = "screen.py"
 MainModule = "screen"
 pluginScreens = []
 
-if RASPBERRYPI:
-    tftscreen.backlight_high()
+
 
 # Set our screen size
 # Should this detect attached display automatically?

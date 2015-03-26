@@ -7,7 +7,7 @@ from sunquest import *
 
 from string import maketrans
 Uppercase = maketrans("7894561230",
-                      'SMTWHF-X--')
+                      'SMTWHF X  ')
 
 DEBUG = False
 

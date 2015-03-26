@@ -1,5 +1,6 @@
 import sys
 import subprocess
+from itertools import cycle, repeat
 import RPi.GPIO as GPIO
 
 sys.dont_write_bytecode = True
@@ -29,6 +30,9 @@ class PiTFT_GPIO(object):
         self.__pin3 = 27
         self.__pin4 = 17
 
+        self.brightness = 1023
+        self._preset_brightness = [16, 64, 128, 256, 512, 1023]
+        self.presets = cycle(self._preset_brightness)
         # set GPIO mode
         GPIO.setmode(GPIO.BCM)
 
@@ -44,7 +48,6 @@ class PiTFT_GPIO(object):
         if buttons[2]:
             if not v2:
                 self.__pin3 = 21
-
             GPIO.setup(self.__pin3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             self.__b3 = True
 
@@ -63,17 +66,19 @@ class PiTFT_GPIO(object):
     def __setupBacklight(self):
 
         set_pwm = 'gpio -g mode 18 pwm'
-        set_duty = 'gpio -g pwm 18 1023'
+        set_duty = 'gpio -g pwm 18 ' + str(self.brightness)
 
         subprocess.call(set_pwm, shell=True)
         subprocess.call(set_duty, shell=True)
         return True
 
     def set_backlight_brightness(self, duty):
-        set_duty = 'gpio -g pwm 18 ' + str(duty)
+        self.brightness = duty
+        set_duty = 'gpio -g pwm 18 ' + str(self.brightness)
         subprocess.call(set_duty, shell=True)
 
     def backlight_off(self, *arg):
+        print "backlight off"
         self.set_backlight_brightness('0')
 
     def backlight_low(self, *arg):
@@ -102,6 +107,7 @@ class PiTFT_GPIO(object):
     # Add interrupt handling...
     def Button1Interrupt(self, callback=None, bouncetime=200):
         if self.__b1:
+            print "button 1"
             GPIO.add_event_detect(self.__pin1,
                                   GPIO.FALLING,
                                   callback=callback,
@@ -109,6 +115,7 @@ class PiTFT_GPIO(object):
 
     def Button2Interrupt(self, callback=None, bouncetime=200):
         if self.__b2:
+            print "Button 2"
             GPIO.add_event_detect(self.__pin2,
                                   GPIO.FALLING,
                                   callback=callback,
@@ -116,6 +123,7 @@ class PiTFT_GPIO(object):
 
     def Button3Interrupt(self, callback=None, bouncetime=200):
         if self.__b3:
+            print "Button 3"
             GPIO.add_event_detect(self.__pin3,
                                   GPIO.FALLING,
                                   callback=callback,
@@ -123,6 +131,7 @@ class PiTFT_GPIO(object):
 
     def Button4Interrupt(self, callback=None, bouncetime=200):
         if self.__b4:
+            print "Button 4"
             GPIO.add_event_detect(self.__pin4,
                                   GPIO.FALLING,
                                   callback=callback,

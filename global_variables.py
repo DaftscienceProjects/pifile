@@ -1,36 +1,101 @@
+import os
 import sys
 import pygame
-from configobj import ConfigObj
-import os
+import fnmatch
 import simplejson
+
 from pprint import pprint
+from configobj import ConfigObj
 from parseIcons import icon
 from validate import Validator
 from sqlitedict import SqliteDict
-sys.dont_write_bytecode = True
-from colors import red, green, blue
-import fnmatch
+from colors import red, green
 from tabulate import tabulate
+sys.dont_write_bytecode = True
 
 DEBUG = True
-
 # THIS SECTION IS TO READ THE CONFIG FILE
 CONFIG_FILE = 'config/settings.ini'
 CONFIG_SPEC = 'config/_config_validator.ini'
-
 PLUGIN_VALIDATOR = 'config/_plugin_validator.ini'
-
 MATERIAL_COLORS = 'material_colors.json'
 
+
+RASPBERRYPI = False
+# pprint(pygame.di`play.list_modes(), 3)
+# Tell the RPi to use the TFT screen and that it's a touchscreen device
+if os.name == 'posix':
+    RASPBERRYPI = True
+    from pitftgpio import PiTFT_GPIO
+    os.putenv('SDL_VIDEODRIVER', 'fbcon')
+    os.putenv('SDL_FBDEV', '/dev/fb1')
+    os.putenv('SDL_MOUSEDRV', 'TSLIB')
+    os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
+    tftscreen = PiTFT_GPIO()
+
+
+def TFTBtn1Click(channel):
+    # test = yield tftscreen.presets
+    tftscreen.set_backlight_brightness(tftscreen.presets.next())
+    # tftscreen.backlight_off()
+
+
+def TFTBtn2Click(channel):
+    tftscreen.set_backlight_brightness(tftscreen.presets.next())
+    # tftscreen.backlight_low()
+
+
+def TFTBtn3Click(channel):
+    pass
+    # tftscreen.backlight_med()
+
+
+def TFTBtn4Click(channel):
+    # tftscreen.backlight_high()
+    tftscreen.brightness
+
+
+# This code needs work-------------------------------------
+# Set up the four TFT button events
+# Set up some custom events
+TFTBUTTONCLICK = pygame.USEREVENT + 1
+UPDATESCREEN = TFTBUTTONCLICK + 1
+NEXTSCREEN = UPDATESCREEN + 1
+NEWSCREEN = NEXTSCREEN + 1
+SLEEPEVENT = NEWSCREEN + 1
+SWIPE_UP = SLEEPEVENT + 1
+SWIPE_DOWN = SWIPE_UP + 1
+TIME_CHANGED = SWIPE_DOWN + 1
+
+
+click1event = pygame.event.Event(TFTBUTTONCLICK, button=1)
+click2event = pygame.event.Event(TFTBUTTONCLICK, button=2)
+click3event = pygame.event.Event(TFTBUTTONCLICK, button=3)
+click4event = pygame.event.Event(TFTBUTTONCLICK, button=4)
+
+
+# Set up the callback functions for the buttons
+if RASPBERRYPI:
+    tftscreen.Button1Interrupt(TFTBtn1Click)
+    tftscreen.Button2Interrupt(TFTBtn2Click)
+    tftscreen.Button3Interrupt(TFTBtn3Click)
+    tftscreen.Button4Interrupt(TFTBtn4Click)
+
+if RASPBERRYPI:
+    tftscreen.backlight_high()
 
 
 config_results = []
 validator = Validator()
-configspec = ConfigObj(CONFIG_SPEC, interpolation=False, list_values=True,_inspec=True)
+configspec = ConfigObj(
+    CONFIG_SPEC,
+    interpolation=False,
+    list_values=True,
+    _inspec=True)
 _CONFIG = ConfigObj(CONFIG_FILE, configspec=configspec)
 result = _CONFIG.validate(validator)
 print "VALIDATING GLOBAL SETTINGS"
-if result != True:
+if not result:
     config_results.append([CONFIG_FILE, red('FAILED')])
     # print "-config/settings.ini " + red('FAILED ') + "validation"
     print tabulate(config_results)
@@ -39,7 +104,11 @@ else:
     print "-config/settings.ini " + green('PASSED ') + "validation"
 
 
-configspec = ConfigObj(PLUGIN_VALIDATOR, interpolation=False, list_values=True,_inspec=True)
+configspec = ConfigObj(
+    PLUGIN_VALIDATOR,
+    interpolation=False,
+    list_values=True,
+    _inspec=True)
 config_results = []
 # PLUGIN_FILES = []
 print "\nVALIDATING PLUGIN SETTINGS"
@@ -50,7 +119,7 @@ for root, dirnames, filenames in os.walk('./'):
         # PLUGIN_FILES.append(os.path.join(root, filename))
         _PLUGIN_CONFIG = ConfigObj(filename, configspec=configspec)
         result = _CONFIG.validate(validator)
-        if result != True:
+        if not result:
             config_results.append([filename, red('FAILED')])
             errors.append(result)
         else:
@@ -63,7 +132,6 @@ print tabulate(config_results)
 pygame.font.init()
 
 
-
 CLOCK_DIRTY = False
 
 
@@ -71,7 +139,7 @@ _COLORS = os.path.join('resources/', MATERIAL_COLORS)
 _COLORS_FILE = open(_COLORS)
 _JSON_COLORS = simplejson.load(_COLORS_FILE)
 # pprint(_JSON_COLORS)
-MATERIAL_COLORS={}
+MATERIAL_COLORS = {}
 for color in _JSON_COLORS:
     # pprint(COLORS)
     MATERIAL_COLORS[color] = {}
@@ -80,9 +148,8 @@ for color in _JSON_COLORS:
         # print tmp
         MATERIAL_COLORS[color][shade] = (tmp[0], tmp[1], tmp[2])
 MATERIAL_COLORS['CLOUD'] = (236, 240, 241)
-MATERIAL_COLORS['ASPHALT'] = (52,  73,  94)
+MATERIAL_COLORS['ASPHALT'] = (52, 73, 94)
 COLORS = MATERIAL_COLORS
-
 
 
 _bg_color = _CONFIG['app_info']['background_color']
@@ -90,12 +157,10 @@ _bg_shade = _CONFIG['app_info']['shade']
 BACKGROUND_COLOR = COLORS[_bg_color][_bg_shade]
 
 
-
 # THIS SECTION IS TO READ THE FONTS
 FONTS = {}
 for key in _CONFIG['fonts']:
     font = _CONFIG['fonts'][key]
-
     font_file = font['font']
     font_size = font['size']
     font_shade = font['shade']
@@ -116,13 +181,13 @@ for key in _CONFIG['storage_settings']:
 # Check if the banner needs to be redrawn
 # then reset the value so the next load
 # times are faster
-if not DEBUG:
-    REBUILD_BANNER = _CONFIG['title_banner']['REBUILD_BANNER']
-    if REBUILD_BANNER:
-        _CONFIG['title_banner']['REBUILD_BANNER'] = False
-        _CONFIG.write()
-else:
-    REBUILD_BANNER = True
+# if not DEBUG:
+    # REBUILD_BANNER = _CONFIG['title_banner']['REBUILD_BANNER']
+    # if REBUILD_BANNER:
+        # _CONFIG['title_banner']['REBUILD_BANNER'] = False
+        # _CONFIG.write()
+# else:
+REBUILD_BANNER = True
 SHADING_QUALITY = _CONFIG['title_banner']['SHADING_QUALITY']
 BORDER = _CONFIG['title_banner']['BORDER']
 CORNER_RADIUS = _CONFIG['title_banner']['CORNER_RADIUS']
@@ -131,7 +196,6 @@ SHADING_ITERATIONS = _CONFIG['title_banner']['SHADING_ITERATIONS']
 BANNNER_ICON_SIZE = _CONFIG['title_banner']['BANNNER_ICON_SIZE']
 
 SCREEN_TIMEOUT = _CONFIG['settings']['screen_timeout']
-
 
 ROWS = {'1': 'A',
         '2': 'B',
@@ -159,7 +223,7 @@ ICON_FONT_JSON = 'config.json'
 ICONS = icon(ICON_FONT_JSON, ICON_FONT_FILE)
 
 
-# # DECLARE THE USER DEFINED EVENTS
+# DECLARE THE USER DEFINED EVENTS
 # TFTBUTTONCLICK = pygame.USEREVENT + 1
 # UPDATESCREEN = TFTBUTTONCLICK + 1
 # NEXTSCREEN = UPDATESCREEN + 1
@@ -183,36 +247,6 @@ tb_db = SqliteDict(_TREKNOBABBLE)
 for key, value in tb_db.iteritems():
     LOADING_MESSEGES.append(value)
 
-# Set up some custom events
-TFTBUTTONCLICK = pygame.USEREVENT + 1
-UPDATESCREEN = TFTBUTTONCLICK + 1
-NEXTSCREEN = UPDATESCREEN + 1
-NEWSCREEN = NEXTSCREEN + 1
-SLEEPEVENT = NEWSCREEN + 1
-SWIPE_UP = SLEEPEVENT + 1
-SWIPE_DOWN = SWIPE_UP + 1
-TIME_CHANGED = SWIPE_DOWN + 1
-
-def TFTBtn1Click(channel):
-    tftscreen.backlight_off()
-
-
-def TFTBtn2Click(channel):
-    tftscreen.backlight_low()
-
-
-def TFTBtn3Click(channel):
-    tftscreen.backlight_med()
-
-
-def TFTBtn4Click(channel):
-    tftscreen.backlight_high()
-# This code needs work-------------------------------------
-# Set up the four TFT button events
-click1event = pygame.event.Event(TFTBUTTONCLICK, button=1)
-click2event = pygame.event.Event(TFTBUTTONCLICK, button=2)
-click3event = pygame.event.Event(TFTBUTTONCLICK, button=3)
-click4event = pygame.event.Event(TFTBUTTONCLICK, button=4)
 
 # return_event = pygame.event.Event(RETURN_EVENT)
 

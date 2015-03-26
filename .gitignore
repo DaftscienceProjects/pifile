@@ -1,6 +1,6 @@
 *.json
 *.pyc
-*.png
+banner.png
 logger.log
 logger.py
 db.json
@@ -8,3 +8,4 @@ db.json
 *.img
 *.sqlite
 *.bak
+*.settings

@@ -1,8 +1,8 @@
 import sys
+import os
 import pygame
 import gui_objects
 from time import strftime, localtime, time
-from pprint import pprint
 from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
 from global_variables import COLORS, ICONS, SCREEN_TIMEOUT
@@ -35,6 +35,9 @@ class myScreen(PiInfoScreen):
         self.timeout_delay = SCREEN_TIMEOUT * 60  # in seconds
         self.new_result = False
 
+
+
+
         self.surface.fill(COLORS['CLOUD'])
         self.hint_text.string = "scan to locate\nswipe up for keyboard"
         self.title.update()
@@ -63,6 +66,11 @@ class myScreen(PiInfoScreen):
             MaxFont=self.fonts['result_font']['size'],
             shrink=True,
             vjustification=1)
+
+        self.not_found =pygame.image.load(os.path.join(self.plugindir, 'resources', 'GG.png'))
+        self.not_found_rect = self.not_found.get_rect()
+        self.not_found_rect.centerx = 160
+
 
         # TOP INFO BAR
         self.info0_rect = pygame.Rect(5, 95, 310, 25)
@@ -124,12 +132,14 @@ class myScreen(PiInfoScreen):
             self.timer = True
             result = RACK_DB.find_accn(accn)
             if not result:
-                self.result_text.font = self.icon_font
-                self.result_text.shrink = False
-                self.result_text.string = ICONS.unicode('emoticon-sad')
-                self.result_text.update()
+                # self.result_text.font = self.icon_font
+                # self.result_text.shrink = False
+                # self.result_text.string = ICONS.unicode('emoticon-sad')
+                # self.result_text.update()
+                # self.result_surface.blit(self.not_found, 
+
                 self.info0.text = accn
-                self.info1.text = "sorry, not found"
+                self.info1.text = "Good Grief! That tube is missing."
             else:
                 self.info0.text = "Accn #: " + accn
                 self.result_text.string = ''
@@ -161,9 +171,9 @@ class myScreen(PiInfoScreen):
                 if self.new_result:
                     self.new_result = False
                     # NOT FOUND
-                    if self.info1.text == "sorry, not found":
+                    if self.info1.text == "Good Grief! That tube is missing.":
                         self.result_surface.blit(
-                            self.result_text.update(), (0, 0))
+                            self.not_found, self.not_found_rect)
                         self.accn_box.update()
                         pass
                     else:
