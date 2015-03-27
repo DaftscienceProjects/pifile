@@ -13,7 +13,6 @@ from colors import red, green
 from tabulate import tabulate
 sys.dont_write_bytecode = True
 
-DEBUG = True
 # THIS SECTION IS TO READ THE CONFIG FILE
 CONFIG_FILE = 'config/settings.ini'
 CONFIG_SPEC = 'config/_config_validator.ini'
@@ -65,7 +64,8 @@ NEWSCREEN = NEXTSCREEN + 1
 SLEEPEVENT = NEWSCREEN + 1
 SWIPE_UP = SLEEPEVENT + 1
 SWIPE_DOWN = SWIPE_UP + 1
-TIME_CHANGED = SWIPE_DOWN + 1
+TOGGLE_FPS = SWIPE_DOWN + 1
+
 
 
 click1event = pygame.event.Event(TFTBUTTONCLICK, button=1)
@@ -132,7 +132,7 @@ print tabulate(config_results)
 pygame.font.init()
 
 
-CLOCK_DIRTY = False
+# CLOCK_DIRTY = False
 
 
 _COLORS = os.path.join('resources/', MATERIAL_COLORS)
@@ -151,6 +151,12 @@ MATERIAL_COLORS['CLOUD'] = (236, 240, 241)
 MATERIAL_COLORS['ASPHALT'] = (52, 73, 94)
 COLORS = MATERIAL_COLORS
 
+
+DEBUG = _CONFIG['settings']['debug']
+FPS = _CONFIG['settings']['fps']
+LOADING_TIME = _CONFIG['settings']['loading_time']
+SHOW_FPS = False
+TOGGLE_FPS_EVENT = pygame.event.Event(TOGGLE_FPS, value=True)
 
 _bg_color = _CONFIG['app_info']['background_color']
 _bg_shade = _CONFIG['app_info']['shade']
@@ -255,5 +261,5 @@ piscreenevents = {
     "button": TFTBUTTONCLICK,
     "update": UPDATESCREEN,
     "nextscreen": NEXTSCREEN,
-    "time_changed": TIME_CHANGED,
+    "toggle_fps": TOGGLE_FPS_EVENT,
 }

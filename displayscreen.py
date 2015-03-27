@@ -6,7 +6,7 @@ import gui_objects
 import eztext
 from configobj import ConfigObj
 from validate import Validator
-from global_variables import COLORS, TITLE_RECT, FONTS, PLUGIN_VALIDATOR
+from global_variables import COLORS, TITLE_RECT, FONTS, PLUGIN_VALIDATOR, piscreenevents
 
 from pprint import pprint
 sys.dont_write_bytecode = True
@@ -44,7 +44,7 @@ class PiInfoScreen():
         # Save the requested screen size
         self.screensize = screensize
         self.userevents = userevents
-        # pprint(self.userevents)
+        self.piscreenevents = piscreenevents
         # Check requested screen size is compatible and set supported property
         if screensize not in self.supportedsizes:
             self.supported = False
@@ -71,7 +71,6 @@ class PiInfoScreen():
             banner_location = self.banner_location)
 
         self.hint_rect = pygame.Rect(0, 120, 320, 70)
-        # self.hint_rect = pygame.Rect(0, 120, 320, 60)
         self.hint_surface = self.surface.subsurface(self.hint_rect)
         self.hint_text = gui_objects.render_textrect(
             string="scan to locate\nswipe up for keyboard",
@@ -111,9 +110,6 @@ class PiInfoScreen():
             align="left",
             background_color=COLORS['CLOUD'])
         self.accn_box.update()
-        # print self.name
-        # print "fontRect " + str(self.accn_box.fontRect.height)
-        # print "rect " + str(self.accn_box.rect.height)
 
     # Read the plugin's config file and dump contents to a dictionary
     def readConfig(self):
@@ -126,7 +122,6 @@ class PiInfoScreen():
         if result != True:
             pprint(result)
             print 'Config file validation failed!'
-        # print "reading config file: " + self.configfile
 
         self.setPluginVariables()
 
@@ -150,7 +145,6 @@ class PiInfoScreen():
             self.title_icon = self.pluginConfig['ui_settings']['title_icon']
         except:
             self.title_icon = 0xf058
-            # print "no title icon for this plugin"
 
         # create a dict with fonts defined in config/settings.ini
         self.fonts = {}
@@ -170,12 +164,6 @@ class PiInfoScreen():
                 'color': font_color,
                 'path': font_location,
                 'size': font_size}
-
-        # if self.pluginConfig["ui_settings"]["has_input"] == 'True':
-        #     self.has_accn_input = True
-        # else:
-        #     self.has_accn_input = False
-        #     self.accn_input = None
 
     # Tells the main script that the plugin is compatible with the requested
     # screen size

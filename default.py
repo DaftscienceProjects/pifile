@@ -2,6 +2,7 @@ import sys
 import pygame
 import imp
 import os
+import psutil
 import random
 import traceback
 from global_variables import *
@@ -27,10 +28,45 @@ screen = pygame.display.set_mode(size)
 
 pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
-FPS = 20
+
+
 clock = pygame.time.Clock()
 screenindex = 0
+stats_rect = pygame.Rect(258, 200, 60, 40)
+stats_surface = screen.subsurface(stats_rect)
 
+stats_text = render_textrect(
+    string="",
+    font=FONTS['fps_font']['font'],
+    rect=stats_rect,
+    text_color=FONTS['fps_font']['color'],
+    background_color=COLORS['CLOUD'],
+    justification=1,
+    FontPath=FONTS['fps_font']['path'],
+    cutoff=False,
+    # margin = (5,5),
+    MinFont=FONTS['fps_font']['size'] - 4,
+    MaxFont=FONTS['fps_font']['size'],
+    shrink=True,
+    vjustification=1)
+
+cpu_pol = []
+_cpu = ''
+def show_fps():
+    global cpu_pol, _cpu
+    _mem = format(psutil.virtual_memory().percent, ".2f")
+    _fps = format(clock.get_fps(), ".2f")
+    if len(cpu_pol) < 20:
+        cpu_pol.append(psutil.cpu_percent(interval=None))
+    else:
+        _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), ".2f")
+        cpu_pol = []
+    
+    stats_text.string = "FPS: "+_fps + '\n' 
+    stats_text.string += 'CPU: ' + _cpu + '\n'
+    stats_text.string += 'CPU: ' + _mem + '\n'
+    # fps_img = FONTS['fps_font']['font'].render(_fps, 1, FONTS['fps_font']['color'])
+    stats_surface.blit(stats_text.update(), (0,0))
 
 quit = False
 # b = pygame.time.get_ticks()
@@ -178,7 +214,7 @@ def showLoadedPlugin(plugin):
     message_text.text_color = plugin.color
     screen.blit(message_text.update(), (0,0))
     pygame.display.flip()
-    sleep(2)
+    sleep(LOADING_TIME)
 
 
 def setNextScreen(a, screenindex):
@@ -243,35 +279,7 @@ pygame.display.set_caption("Info screen")
 # Stop keys repeating
 pygame.key.set_repeat()
 
-# Base font for messages
-# myfont = pygame.font.SysFont(None, 20)
-
-# Show welcome screen
-# showWelcomeScreen()
-
-# Get list of screens that can be provided by plugins
 pluginScreens = getScreens()
-# Parse some options
-# try:
-#     opts, args = getopt.getopt(sys.argv[1:], 'lh', ['help', 'list'])
-# except getopt.GetoptError as err:
-#     log(err)
-#     usage()
-#     sys.exit()
-
-# for o, a in opts:
-# Show installed plugins
-#     if o in ("-l", "--list"):
-#         listPlugins()
-#         sys.exit()
-# Show help
-#     if o in ("-h", "--help"):
-#         usage()
-#         sys.exit()
-# TO DO: add option for automatic screen change (with timeout)
-
-# Set some useful variables for controlling the display
-
 
 mouseDownTime = 0
 mouseDownPos = (0, 0)
@@ -321,7 +329,10 @@ displayLoadingScreen(screenindex)
 
 # Run our main loop
 while not quit:
+    # global SHOW_FPS
     for event in pygame.event.get():
+        # print event.type
+        # print piscreenevents['toggle_fps'].type
         # Handle quit message received
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             quit = True
@@ -329,6 +340,9 @@ while not quit:
         if event.type == pygame.QUIT:
             quit = True
         # mouse button pressed
+        if event.type == piscreenevents['toggle_fps'].type:
+            SHOW_FPS = not SHOW_FPS
+            print SHOW_FPS
         if (event.type == pygame.MOUSEBUTTONDOWN):
             mouseDownTime = pygame.time.get_ticks()
             mouseDownPos = pygame.mouse.get_pos()
@@ -375,11 +389,9 @@ while not quit:
         pluginScreens[screenindex].event_handler(event)
 
     screen = pluginScreens[screenindex].showScreen()
-    # Control FPS
-    # if CLOCK_DIRTY == True:
-        # clock = pygame.time.Clock()
-        # CLOCK_DIRTY = False
 
+    if SHOW_FPS:
+        show_fps()
     clock.tick(FPS)
     # clock.tick()
     pygame.display.flip()
