@@ -45,7 +45,7 @@ pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
 clock = pygame.time.Clock()
 screenindex = 0
-stats_rect = pygame.Rect(228, 190, 90, 50)
+stats_rect = pygame.Rect(228, 180, 90, 60)
 stats_surface = screen.subsurface(stats_rect)
 
 stats_text = render_textrect(
