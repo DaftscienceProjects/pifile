@@ -1,8 +1,7 @@
 import sys
 import os
 import subprocess
-# import pygameui
-import pygame
+# import pygame
 from time import strftime, localtime, time, sleep
 from change_time import change_time
 from global_variables import COLORS, piscreenevents, ICONS, SWIPE_UP, SWIPE_DOWN
@@ -59,17 +58,20 @@ class myScreen(PiInfoScreen):
         pygame.event.post(self.piscreenevents['toggle_fps'])
 
     def apply_patch(self):
-        message = "Starting Update..."
-        self.update_message(message)
-        message +="\n -Backing up database"
-        sleep(2)
+        # message = "Starting Update..."
+        # self.update_message(message)
+        message ="-Backing up database"
+        # sleep(1)
         self.update_message(message)
         subprocess.call(self.shell_commands['backup'], shell=True)
-        sleep(1)
+        # sleep(1)
         message +="\n -Downloading patch"
         self.update_message(message)
-        subprocess.call(self.shell_commands['update'], shell=True)
-        sleep(1)
+        # subprocess.call(self.shell_commands['update'], shell=True)
+        # sleep(1)
+        message += "\n -Downloading modules"
+        self.update_message(message)
+        subprocess.call('pip install -r requirements.txt', shell=True)
         self.update_message('Update Complete\nRestarting now')
         sleep(2)
         subprocess.call(self.shell_commands['restart'], shell=True)
@@ -89,40 +91,24 @@ class myScreen(PiInfoScreen):
             text += key + ': ' + str(tmp[key]) + '\n'
         self.update_message(text)
 
-
-        # self.update_message(RACK_DB._db_info())
-        # sleep(10)
-
     def clean_database(self):
         self.update_message("PURGING DATABASE\nThis might take some time, please don't discconect power.")
         RACK_DB.clean()
         self.hint_text.string = "Finished Optomizing\nIt's now safe to leave this screen"
 
-
-  
-
     def event_handler(self, event):
         if event.type == SWIPE_UP:
             self.dirty = True
             tmp = self.vkey.run('')
-            # try:
             self.run_command(tmp)
             return
-
-        if event.type == KEYDOWN and event.key == K_RETURN:
-            accn = self.barcode_input.value
-            # if accn != '':
-                # self.dirty = True
-                # print accn
-
 
     def run_command(self, command):
         if command in self.shell_commands:
             subprocess.call(self.shell_commands[command], shell=True)
         if command in self.commands:
+            # print "run command"
             self.commands[command]()
-    
-
 
     def show_settings(self):
         self.hint_surface.fill(COLORS['CLOUD'])
@@ -133,7 +119,7 @@ class myScreen(PiInfoScreen):
         self.screen.blit(self.surface, (0, 0))
 
     def showScreen(self):
-        if self.setting_visible == True:
+        if self.setting_visible:
             self.settings_screen = self.show_settings()
             return self.screen
         else:

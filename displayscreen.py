@@ -1,7 +1,7 @@
 import pygame
 import sys
 import os
-import urllib2
+# import urllib2
 import gui_objects
 import eztext
 from configobj import ConfigObj

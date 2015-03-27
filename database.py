@@ -1,13 +1,11 @@
 import os
 from tinydb import TinyDB, where
 import inspect
-# from tinydb.middlewares import CachingMiddleware
-# from tinydb.storages import MemoryStorage, JSONStorage
 from tinyrecord import transaction
 from time import time, mktime, strftime, localtime
 import datetime
 from global_variables import DATABASE_SETTINGS, ROWS
-from pprint import pprint
+from pprintpp import pprint
 from sqlitedict import SqliteDict
 from prettytable import PrettyTable
 
@@ -265,3 +263,4 @@ if __name__ == '__main__':
     RACK_DB._db_info()
     print_prof_data()
     RACK_DB.clean()
+    pprint(RACK_DB.mem_db)

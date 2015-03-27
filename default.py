@@ -1,7 +1,12 @@
-import sys
+import subprocess
+try:
+    subprocess.call('pip install -r requirements.txt', shell=True)
+except:
+    print "unable to install requirements"
+
+import os
 import pygame
 import imp
-import os
 import psutil
 import random
 import traceback
@@ -11,6 +16,14 @@ from time import time, sleep
 from keyboard import VirtualKeyboard
 sys.dont_write_bytecode = True
 from gui_objects import render_textrect
+import types
+
+# modulenames = set(sys.modules)&set(globals())
+# allmodules = [name for name in modulenames]
+# for thing in allmodules:
+#     pprint(thing)
+# # import sys
+
 
 debug = True
 screensleep = 60000
@@ -18,10 +31,10 @@ screensleep = 60000
 # This is where we start
 # Initialise pygame
 
-
+pygame.init()
 ##############################################################################
 # Create a clock and set max FPS (This reduces a lot CPU ussage)
-pygame.init()
+
 # Screen size (currently fixed)
 size = width, height = 320, 240
 screen = pygame.display.set_mode(size)
@@ -32,7 +45,7 @@ pygame.mouse.set_visible(False if RASPBERRYPI else True)
 
 clock = pygame.time.Clock()
 screenindex = 0
-stats_rect = pygame.Rect(258, 200, 60, 40)
+stats_rect = pygame.Rect(228, 190, 90, 50)
 stats_surface = screen.subsurface(stats_rect)
 
 stats_text = render_textrect(
@@ -41,30 +54,30 @@ stats_text = render_textrect(
     rect=stats_rect,
     text_color=FONTS['fps_font']['color'],
     background_color=COLORS['CLOUD'],
-    justification=1,
+    justification=0,
     FontPath=FONTS['fps_font']['path'],
-    cutoff=False,
+    cutoff=True,
     # margin = (5,5),
     MinFont=FONTS['fps_font']['size'] - 4,
     MaxFont=FONTS['fps_font']['size'],
-    shrink=True,
-    vjustification=1)
+    shrink=False,
+    vjustification=0)
 
 cpu_pol = []
 _cpu = ''
 def show_fps():
     global cpu_pol, _cpu
-    _mem = format(psutil.virtual_memory().percent, ".2f")
-    _fps = format(clock.get_fps(), ".2f")
+    _mem = format(psutil.virtual_memory().percent, "3.2f")
+    _fps = format(clock.get_fps(), "3.2f")
     if len(cpu_pol) < 20:
         cpu_pol.append(psutil.cpu_percent(interval=None))
     else:
-        _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), ".2f")
+        _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), "3.2f")
         cpu_pol = []
     
-    stats_text.string = "FPS: "+_fps + '\n' 
-    stats_text.string += 'CPU: ' + _cpu + '\n'
-    stats_text.string += 'CPU: ' + _mem + '\n'
+    stats_text.string = "FPS: "+_fps + '  \n' 
+    stats_text.string += 'CPU: ' + _cpu + ' %\n'
+    stats_text.string += 'Mem: ' + _mem + ' %'
     # fps_img = FONTS['fps_font']['font'].render(_fps, 1, FONTS['fps_font']['color'])
     stats_surface.blit(stats_text.update(), (0,0))
 
@@ -105,14 +118,12 @@ def getPlugins():
         a = a + 1
     return plugins
 
-
 def loadPlugin(plugin):
     return imp.load_module(MainModule, *plugin["info"])
 ##############################################################################
 
 ##############################################################################
 # Initialise plugin screens
-
 
 def getScreens():
     '''Gets list of available plugin screen objects.'''
@@ -329,10 +340,8 @@ displayLoadingScreen(screenindex)
 
 # Run our main loop
 while not quit:
-    # global SHOW_FPS
     for event in pygame.event.get():
         # print event.type
-        # print piscreenevents['toggle_fps'].type
         # Handle quit message received
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             quit = True
@@ -342,7 +351,6 @@ while not quit:
         # mouse button pressed
         if event.type == piscreenevents['toggle_fps'].type:
             SHOW_FPS = not SHOW_FPS
-            print SHOW_FPS
         if (event.type == pygame.MOUSEBUTTONDOWN):
             mouseDownTime = pygame.time.get_ticks()
             mouseDownPos = pygame.mouse.get_pos()

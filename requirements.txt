@@ -1,0 +1,12 @@
+simplejson
+pprintpp
+psutil
+pygame
+tabulate
+sqlitedict
+tinyrecord
+prettytable
+configobj
+pillow
+tinydb
+validate

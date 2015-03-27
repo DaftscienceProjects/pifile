@@ -3,7 +3,6 @@ import sys
 import pygame
 import fnmatch
 import simplejson
-
 from pprint import pprint
 from configobj import ConfigObj
 from parseIcons import icon
@@ -18,7 +17,6 @@ CONFIG_FILE = 'config/settings.ini'
 CONFIG_SPEC = 'config/_config_validator.ini'
 PLUGIN_VALIDATOR = 'config/_plugin_validator.ini'
 MATERIAL_COLORS = 'material_colors.json'
-
 
 RASPBERRYPI = False
 # pprint(pygame.di`play.list_modes(), 3)
@@ -59,12 +57,12 @@ def TFTBtn4Click(channel):
 # Set up some custom events
 TFTBUTTONCLICK = pygame.USEREVENT + 1
 UPDATESCREEN = TFTBUTTONCLICK + 1
-NEXTSCREEN = UPDATESCREEN + 1
+TOGGLE_FPS = UPDATESCREEN + 1
+NEXTSCREEN = TOGGLE_FPS + 1
 NEWSCREEN = NEXTSCREEN + 1
 SLEEPEVENT = NEWSCREEN + 1
 SWIPE_UP = SLEEPEVENT + 1
 SWIPE_DOWN = SWIPE_UP + 1
-TOGGLE_FPS = SWIPE_DOWN + 1
 
 
 
