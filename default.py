@@ -1,8 +1,8 @@
-import subprocess
-try:
-    subprocess.call('pip install -r requirements.txt', shell=True)
-except:
-    print "unable to install requirements"
+# import subprocess
+# try:
+#     subprocess.call('pip install -r requirements.txt', shell=True)
+# except:
+#     print "unable to install requirements"
 
 import os
 import pygame
@@ -60,7 +60,7 @@ stats_text = render_textrect(
     # margin = (5,5),
     MinFont=FONTS['fps_font']['size'] - 4,
     MaxFont=FONTS['fps_font']['size'],
-    shrink=False,
+    shrink=True,
     vjustification=0)
 
 cpu_pol = []
