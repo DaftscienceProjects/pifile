@@ -36,13 +36,13 @@ class tiny_db():
                 print "Database is Empty"
 
 
-    @profile
+    # @profile
     def _define_mem_db(self):
         self.mem_db = []
         for item in self.dict_db.iteritems():
             self.mem_db.append(item[1])
 
-    @profile
+    # @profile
     def _db_info(self):
         if len(self.mem_db) > 0:
             x = PrettyTable([" ", "size"])
@@ -102,7 +102,7 @@ class tiny_db():
                     self.days_to_keep)).timetuple()))
         return strftime('%a', localtime(time()))
 
-    @profile
+    # @profile
     def file_accn(self, accn):
         insert = {
             'accn': accn,
@@ -117,7 +117,7 @@ class tiny_db():
         self.dict_db[insert['time']] = insert
         self.next_location()
 
-    @profile
+    # @profile
     def get_last_filed(self):
         _last_filed_id = None
         self.last_filed = None
@@ -127,7 +127,7 @@ class tiny_db():
                 self.last_filed = item
         return self.last_filed
 
-    @profile
+    # @profile
     def get_first_filed(self):
         # if len(self.mem_db) == 1:
             # return self.last_filed
@@ -148,14 +148,14 @@ class tiny_db():
                 # print first_filed
                 return first_filed
 
-    @profile
+    # @profile
     def new_day(self):
         self.next['column'] = 1
         self.next['rack'] = 1
         self.next['row'] = 1
         self.next['rackDay'] = self._today()
 
-    @profile
+    # @profile
     def next_location(self):
         if self.last_filed is None:
             self.new_day()
@@ -177,7 +177,7 @@ class tiny_db():
             self.next['row'] = self.last_filed['row']
         self.next['rackDay'] = self._today()
 
-    @profile
+    # @profile
     def find_accn(self, accn):
         result = []
         for item in self.mem_db:
@@ -185,7 +185,7 @@ class tiny_db():
                 result.append(item)
         return result
 
-    @profile
+    # @profile
     def _convert_to_sqlitedb(self):
         old_db = TinyDB(DATABASE_SETTINGS['database'])
         self.mem_db = []
@@ -210,7 +210,7 @@ class tiny_db():
         print "COMMITING CHANGES"
         self.get_last_filed()
 
-    @profile
+    # @profile
     def clean(self):
         print "HARD STORAGE: " + str(len(self.dict_db))
         print "Mem:  " +str(len(self.mem_db))
