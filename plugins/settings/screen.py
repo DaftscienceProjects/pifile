@@ -34,7 +34,7 @@ class myScreen(PiInfoScreen):
         self.minus = ICONS.unicode('down-open')
         self.plus = ICONS.unicode('up-open')
         self.surface.fill(COLORS['CLOUD'])
-        self.hint_text.string = self.default_message
+        self.hint_text.update_string(self.default_message)
         self.title.update()
 
 
@@ -77,9 +77,9 @@ class myScreen(PiInfoScreen):
         subprocess.call(self.shell_commands['restart'], shell=True)
 
     def update_message(self,msg):
-        self.hint_text.string = msg
+        self.hint_text.update_string(msg)
         self.hint_surface.blit(self.hint_text.update(), (0, 0))
-        self.clock.text = ' '
+        self.clock.update_text(' ')
         self.clock.update()
         self.screen.blit(self.surface, (0, 0))
         pygame.display.flip()
@@ -94,7 +94,7 @@ class myScreen(PiInfoScreen):
     def clean_database(self):
         self.update_message("PURGING DATABASE\nThis might take some time, please don't discconect power.")
         RACK_DB.clean()
-        self.hint_text.string = "Finished Optomizing\nIt's now safe to leave this screen"
+        self.hint_text.update_string("Finished Optomizing\nIt's now safe to leave this screen")
 
     def event_handler(self, event):
         if event.type == SWIPE_UP:
@@ -112,7 +112,7 @@ class myScreen(PiInfoScreen):
 
     def show_settings(self):
         self.hint_surface.fill(COLORS['CLOUD'])
-        self.clock.text = strftime("%H:%M", localtime(time()))
+        self.clock.update_text(strftime("%H:%M", localtime(time())))
         self.clock.update()
         for b in self.buttons:
             b.update()
@@ -124,10 +124,10 @@ class myScreen(PiInfoScreen):
             return self.screen
         else:
             self.hint_surface.blit(self.hint_text.update(), (0, 0))
-            self.clock.text = strftime("%H:%M", localtime(time()))
+            self.clock.update_text(strftime("%H:%M", localtime(time())))
             self.clock.update()
             self.screen.blit(self.surface, (0, 0))
             return self.screen
 
     def exit_function(self):
-        self.hint_text.string = self.default_message
+        self.hint_text.update_string(self.default_message)

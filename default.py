@@ -57,7 +57,6 @@ stats_text = render_textrect(
     justification=0,
     FontPath=FONTS['fps_font']['path'],
     cutoff=True,
-    # margin = (5,5),
     MinFont=FONTS['fps_font']['size'] - 4,
     MaxFont=FONTS['fps_font']['size'],
     shrink=True,
@@ -75,9 +74,9 @@ def show_fps():
         _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), "3.2f")
         cpu_pol = []
     
-    stats_text.string = "FPS: "+_fps + '  \n' 
-    stats_text.string += 'CPU: ' + _cpu + ' %\n'
-    stats_text.string += 'Mem: ' + _mem + ' %'
+    stats_text.string = "FPS: "+_fps + '\n' 
+    stats_text.string += 'CPU: ' + _cpu + '%\n'
+    stats_text.string += 'Mem: ' + _mem + '%'
     # fps_img = FONTS['fps_font']['font'].render(_fps, 1, FONTS['fps_font']['color'])
     stats_surface.blit(stats_text.update(), (0,0))
 

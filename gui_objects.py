@@ -20,6 +20,7 @@ class text_label(pygame.sprite.Sprite):
 
     def __init__(self, *args, **kwargs):
         pygame.sprite.Sprite.__init__(self)
+        self.dirty = True
         self.surface = kwargs['surface']
         self.font = kwargs['font']
         self.text = kwargs['text']
@@ -49,30 +50,24 @@ class text_label(pygame.sprite.Sprite):
         else:
             self.rect = None
 
+    def update_text(self, string):
+        if self.text == string:
+            return
+        else:
+            self.dirty = True
+            self.text = string
+
     def blit_text(self):
-        # print self.color
-        # print self.font.get_sized_descender()  
-        
-        # pillfont = ImageFont.truetype(ICONS.font_location, 45)
-        # img = Image.new('RGBA', self.surface.get_size())
-        # draw = ImageDraw.Draw(img)
-        # getmask(text, mode='') 
-        # draw.text((10, 25), "world", font=pillfont)
-        # img.show()
-
-
         self.label = self.font.render(self.text, 1, self.color)
         # get the size of the text object
         self.fontRect = self.label.get_rect()
         # create the text object
-
         if self.align == 'left':
             self.fontRect.left = self.surface.get_rect().left
         elif self.align == 'right':
             self.fontRect.right = self.surface.get_rect().right
         else:
             self.fontRect.centerx = self.surface.get_rect().centerx
-
         if self.valign == 'top':
             self.fontRect.top = 0
         elif self.valign == 'bottom':
@@ -81,10 +76,15 @@ class text_label(pygame.sprite.Sprite):
             self.fontRect.centery = self.surface.get_rect().centery
 
     def update(self):
-        self.blit_text()
-        self.surface.fill(self.background_color)
-        self.surface.blit(self.label, self.fontRect)
-        return self.surface
+        if self.dirty:
+            print "dirty " + self.text
+            self.dirty = False
+            self.blit_text()
+            self.surface.fill(self.background_color)
+            self.surface.blit(self.label, self.fontRect)
+            return self.surface
+        else:
+            return self.surface
 
 
 class title_banner(text_label):
@@ -176,6 +176,8 @@ class render_textrect():
         self.FontPath = FontPath
         self.MaxFont = MaxFont
         self.MinFont = MinFont
+        self.surface = None
+        self.dirty = True
 
         if isinstance(self.margin, tuple):
             if not len(self.margin) == 4:
@@ -190,35 +192,45 @@ class render_textrect():
             self.margin = (self.margin, self.margin, self.margin, self.margin)
         else:
             self.margin = (0, 0, 0, 0)
+    def update_string(self, string):
+        
+        if self.string == string:
+            return
+        else:
+            self.dirty = True
+            self.string = string
 
     def update(self):
-        self.fontsize = self.MaxFont
-        if not self.shrink:
-            # print "not shrunk"
-            surface = self.draw_text_rect()
+        if not self.dirty:
+            return self.screen
         else:
-            fit = False
-            while self.fontsize >= self.MinFont:
-                if self.FontPath is None:
-                    self.font = pygame.font.SysFont(
-                        self.SysFont,
-                        self.fontsize)
-                else:
-                    # print "found font"
-                    self.font = pygame.font.Font(self.FontPath, self.fontsize)
-                try:
-                    surface = self.draw_text_rect()
-                    fit = True
-                    break
-                except self.TextRectException:
-                    self.fontsize -= 1
-                    # print "trying new font" + str(self.fontsize)
-            if not fit:
-                self.cutoff = True
-                # print "shrunk to font: " + str(self.fontsize)
-                self.font = pygame.font.Font(self.FontPath, self.fontsize)
+            self.fontsize = self.MaxFont
+            if not self.shrink:
+                # print "not shrunk"
                 surface = self.draw_text_rect()
-        return self.draw_text_rect()
+            else:
+                fit = False
+                while self.fontsize >= self.MinFont:
+                    if self.FontPath is None:
+                        self.font = pygame.font.SysFont(
+                            self.SysFont,
+                            self.fontsize)
+                    else:
+                        # print "found font"
+                        self.font = pygame.font.Font(self.FontPath, self.fontsize)
+                    try:
+                        surface = self.draw_text_rect()
+                        fit = True
+                        break
+                    except self.TextRectException:
+                        self.fontsize -= 1
+                        # print "trying new font" + str(self.fontsize)
+                if not fit:
+                    self.cutoff = True
+                    # print "shrunk to font: " + str(self.fontsize)
+                    self.font = pygame.font.Font(self.FontPath, self.fontsize)
+                    surface = self.draw_text_rect()
+            return self.draw_text_rect()
 
     class TextRectException(Exception):
 
@@ -320,6 +332,7 @@ class render_textrect():
             raise self.TextRectException(
                 "Invalid vjustification argument: " +
                 str(justification))
+        self.surface = surface
         return surface
     surface = None
 

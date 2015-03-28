@@ -32,15 +32,13 @@ class myScreen(PiInfoScreen):
 
         self.surface.fill(COLORS['CLOUD'])
         self.title.update()
-        self.hint_text.string = "scan to store\nswipe up for keyboard"
+        self.hint_text.update_string("scan to store\nswipe up for keyboard")
         # RACK_DB.next_location()
         if RACK_DB.last_filed:
-            self.accn_box.text = "Last Filed: " + RACK_DB.last_filed['accn']
+            self.accn_box.update_text("Last Filed: " + RACK_DB.last_filed['accn'])
         else:
-            self.accn_box.text = "Unavailable"
+            self.accn_box.update_text("Unavailable")
         # self.accn_box.text =  "Last Filed: #: " + accn
-
-        
 
         self.barcode_input = Input()
 
@@ -94,11 +92,11 @@ class myScreen(PiInfoScreen):
         # li_row_font = 'OpenSans-Regular.ttf'
         li_row_font = 'OpenSans-Semibold.ttf'
         self.li_row_font = os.path.join("resources/fonts", li_row_font)
-        self.dirty = True
+        # self.dirty = True
         self.update_indicator()
         self.clock.update()
         self.accn_box.update()
-        self.dirty = True
+        # self.dirty = True
 
     def update_indicator(self):
         li_items = []
@@ -141,11 +139,11 @@ class myScreen(PiInfoScreen):
     def event_handler(self, event):
         # print event.type
         if event.type == SWIPE_UP:
-            self.dirty = True
+            # self.dirty = True
             tmp = self.vkey.run('')
             accn = tmp
             if accn != '':
-                self.dirty = True
+                # self.dirty = True
                 if RACK_DB.last_filed == None:
                     self.store(accn)
                 elif accn != RACK_DB.last_filed['accn']:
@@ -160,7 +158,7 @@ class myScreen(PiInfoScreen):
         if event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
             if accn != '':
-                self.dirty = True
+                # self.dirty = True
                 if RACK_DB.last_filed == None:
                     self.store(accn)
                 elif accn != RACK_DB.last_filed['accn']:
@@ -169,9 +167,9 @@ class myScreen(PiInfoScreen):
                     print "DUPLICATE ACCN - NOT FILED"
         self.barcode_input.update(event)
     def store(self, accn):
-        self.dirty = True
+        # self.dirty = True
         RACK_DB.file_accn(accn)
-        self.accn_box.text = "Last Filed: " + accn
+        self.accn_box.update_text("Last Filed: " + accn)
         self.accn_box.update()
         self.update_indicator()
 
@@ -179,22 +177,24 @@ class myScreen(PiInfoScreen):
         pass
 
     def exit_function(self):
-        self.dirty = True
+        pass
+        # self.dirty = True
 
     def showScreen(self):
-        if self.clock.text == strftime("%H:%M", localtime(time())):
-            if self.dirty == False:
-                return self.screen
-            else:
-                self.dirty = True
+        # if self.clock.text == strftime("%H:%M", localtime(time())):
+            # if self.dirty == False:
+                # return self.screen
+            # else:
+                # self.dirty = True
 
-        self.dirty = False
+        # self.dirty = False
         self.hint_surface.blit(self.hint_text.update(), (0, 0))
         file_string = gui_objects.format_location(RACK_DB.next)
         self.location_indicator.update()
-        self.info2.text = file_string
+        self.info2.update_text(file_string)
         self.info2.update()
-        self.clock.text = strftime("%H:%M", localtime(time()))
+        # if self.clock.text == strftime("%H:%M", localtime(time())):
+        self.clock.update_text(strftime("%H:%M", localtime(time())))
         self.clock.update()
         self.accn_box.update()
         self.screen.blit(self.surface, (0, 0))

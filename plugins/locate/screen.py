@@ -39,7 +39,7 @@ class myScreen(PiInfoScreen):
 
 
         self.surface.fill(COLORS['CLOUD'])
-        self.hint_text.string = "scan to locate\nswipe up for keyboard"
+        self.hint_text.update_string("scan to locate\nswipe up for keyboard")
         self.title.update()
         self.hint_surface.blit(self.hint_text.update(), (0, 0))
 
@@ -105,9 +105,9 @@ class myScreen(PiInfoScreen):
         self.result_surface.fill(COLORS['CLOUD'])
         self.accn_surface.fill(COLORS['CLOUD'])
         self.result_text.font = self.fonts['result_font']['font']
-        self.info0.text = ''
+        self.info0.update_text('')
         self.info0.update()
-        self.info1.text = ''
+        self.info1.update_text('')
         self.info1.update()
         self.result_text.shrink = True
         self.result_text.cutoff = False
@@ -116,12 +116,12 @@ class myScreen(PiInfoScreen):
         accn = ''
         if event.type == SWIPE_UP:
             accn = self.vkey.run('')
-            self.accn_box.text = "Accn#: " + str(accn)
+            self.accn_box.update_text("Accn#: " + str(accn))
         elif event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
             self.barcode_input.value = ''
             if accn != '':
-                self.accn_box.text = "Accn#: " + str(accn)
+                self.accn_box.update_text("Accn#: " + str(accn))
                 # RACK_DB.file_accn(accn)
         else:
             self.barcode_input.update(event)
@@ -138,26 +138,26 @@ class myScreen(PiInfoScreen):
                 # self.result_text.update()
                 # self.result_surface.blit(self.not_found, 
 
-                self.info0.text = accn
-                self.info1.text = "Good Grief! That tube is missing."
+                self.info0.update_text(accn)
+                self.info1.update_text("Good Grief! That tube is missing.")
             else:
-                self.info0.text = "Accn #: " + accn
-                self.result_text.string = ''
+                self.info0.update_text("Accn #: " + accn)
+                self.result_text.update_string('')
                 if len(result) <= 6:
                     if len(result) == 1:
-                        self.info1.text = str(
-                            len(result)) + ' location found'
+                        self.info1.update_text(str(
+                            len(result)) + ' location found')
                     else:
-                        self.info1.text = str(
-                            len(result)) + ' locations found'
+                        self.info1.update_text(str(
+                            len(result)) + ' locations found')
                     reversed_list = reversed(result)
                 else:
-                    self.info1.text = "Showing last 6 locations"
+                    self.info1.update_text("Showing last 6 locations")
                     reversed_list = reversed(result[-6:])
                 formated = []
                 for item in reversed_list:
                     formated.append(gui_objects.format_location(item))
-                self.result_text.string = "\n".join(formated)
+                self.result_text.update_string("\n".join(formated))
     # self.accn_input.update(event)
 
     def update_locations(self):
@@ -185,8 +185,8 @@ class myScreen(PiInfoScreen):
                 self.timer = False
                 self.reset()
                 self.hint_surface.blit(self.hint_text.update(), (0, 0))
-
-        self.clock.text = strftime("%H:%M", localtime(time()))
+        # if self.clock.text != strftime("%H:%M", localtime(time())):
+        self.clock.update_text(strftime("%H:%M", localtime(time())))
         self.clock.update()
         self.info0.update()
         self.info1.update()
