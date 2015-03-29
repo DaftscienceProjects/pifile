@@ -161,7 +161,7 @@ class render_textrect():
     def __init__(self, string, font, rect, text_color,
                  background_color, justification=0, vjustification=0,
                  margin=0, shrink=False, SysFont=None, FontPath=None,
-                 MaxFont=50, MinFont=5, cutoff=True, surface=None):
+                 MaxFont=50, MinFont=5, cutoff=True, screen=None):
         self.string = string
         self.font = font
         self.rect = rect
@@ -177,6 +177,7 @@ class render_textrect():
         self.MaxFont = MaxFont
         self.MinFont = MinFont
         self.surface = None
+        self.screen = screen
         self.dirty = True
 
         if isinstance(self.margin, tuple):
@@ -202,7 +203,7 @@ class render_textrect():
 
     def update(self):
         if not self.dirty:
-            return self.screen
+            return self.surface
         else:
             self.fontsize = self.MaxFont
             if not self.shrink:
@@ -333,6 +334,8 @@ class render_textrect():
                 "Invalid vjustification argument: " +
                 str(justification))
         self.surface = surface
+        if self.screen:
+            self.screen.blit(surface, (0,0))
         return surface
     surface = None
 

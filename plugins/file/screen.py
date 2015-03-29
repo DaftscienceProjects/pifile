@@ -7,7 +7,7 @@ from time import strftime, localtime
 from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
 from multi_font_text import multi_font
-from global_variables import COLORS, SWIPE_UP, ICONS, DATABASE_SETTINGS, ROWS, piscreenevents
+from global_variables import COLORS, SWIPE, ICONS, TITLE_RECT, DATABASE_SETTINGS, ROWS, piscreenevents
 from displayscreen import PiInfoScreen
 from keyboard import VirtualKeyboard
 from database import RACK_DB
@@ -30,10 +30,8 @@ class myScreen(PiInfoScreen):
         self.vkey_surface = pygame.display.get_surface()
         self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
 
-        self.surface.fill(COLORS['CLOUD'])
-        self.title.update()
+        self.screen.fill(COLORS['CLOUD'])
         self.hint_text.update_string("scan to store\nswipe up for keyboard")
-        # RACK_DB.next_location()
         if RACK_DB.last_filed:
             self.accn_box.update_text("Last Filed: " + RACK_DB.last_filed['accn'])
         else:
@@ -41,13 +39,16 @@ class myScreen(PiInfoScreen):
         # self.accn_box.text =  "Last Filed: #: " + accn
 
         self.barcode_input = Input()
-
         info0_text = "Next Location: "
         info0_size = self.fonts['default_font'][
             'font'].render(info0_text, 1, (0, 0, 0))
         w = info0_size.get_rect().width
+
+        # self.title.update()
+
+
         self.info0_rect = pygame.Rect(5, 95, w, 25)
-        self.info0_surface = self.surface.subsurface(self.info0_rect)
+        self.info0_surface = pygame.Surface(self.info0_rect.size)
         self.info0 = gui_objects.text_label(
             surface=self.info0_surface,
             font=self.fonts['default_font']['font'],
@@ -58,14 +59,21 @@ class myScreen(PiInfoScreen):
             valign='bottom',
             align="left",
             background_color=COLORS['CLOUD'])
-        self.info0.update()
+        # self.info0.update()
+        self.screen_objects['info0'] = {
+                'object': self.info0, 
+                'surface': self.info0_surface, 
+                'rect': self.info0_rect,
+                'dirty': True
+                }
+
         # ------------------------------------------
         # These information labels will change when the screen is updated
         # They will need to be updated
         #----------------------------------------
         self.info2_rect = pygame.Rect(0, 95, 100, 25)
         self.info2_rect.left = self.info0_rect.right + 1
-        self.info2_surface = self.surface.subsurface(self.info2_rect)
+        self.info2_surface = pygame.Surface(self.info2_rect.size)
         self.info2 = gui_objects.text_label(
             surface=self.info2_surface,
             font=self.fonts['default_font']['font'],
@@ -75,6 +83,14 @@ class myScreen(PiInfoScreen):
             valign='bottom',
             align="left",
             background_color=COLORS['CLOUD'])
+        self.screen_objects['info2'] = {
+                'object': self.info2, 
+                'surface': self.info2_surface, 
+                'rect': self.info2_rect,
+                'dirty': True
+                }
+
+
 
         # location dots!
         self.empty_dot = ICONS.unicode('checkbox-blank-circle-outline')
@@ -82,23 +98,30 @@ class myScreen(PiInfoScreen):
         self.select_dot = ICONS.unicode('plus-circled')
 
         self.location_indicator_rect = pygame.Rect(0, 200, 320, 35)
-        self.location_indicator_surface = self.surface.subsurface(
-            self.location_indicator_rect)
+        self.location_indicator_surface = pygame.Surface(
+            self.location_indicator_rect.size)
         li_items = []
         self.location_indicator = multi_font(
             self.location_indicator_surface,
             li_items,
             COLORS['CLOUD'])
-        # li_row_font = 'OpenSans-Regular.ttf'
+        self.screen_objects['li'] = {
+                'object': self.location_indicator, 
+                'surface': self.location_indicator_surface, 
+                'rect': self.location_indicator_rect,
+                'dirty': True
+                }
+
         li_row_font = 'OpenSans-Semibold.ttf'
         self.li_row_font = os.path.join("resources/fonts", li_row_font)
-        # self.dirty = True
         self.update_indicator()
-        self.clock.update()
-        self.accn_box.update()
-        # self.dirty = True
+
+        for thing in self.screen_objects:
+            self.screen_objects[thing]['object'].update()
+            self.screen_objects[thing]['object'].dirty = True
 
     def update_indicator(self):
+        # self.location_
         li_items = []
         item = {
             'font_location': self.li_row_font,
@@ -106,6 +129,7 @@ class myScreen(PiInfoScreen):
             'size': 23,
             'color': self.color
         }
+
         li_items.append(item)
         # self.info1.text = ''
         size = 18
@@ -138,8 +162,8 @@ class myScreen(PiInfoScreen):
 
     def event_handler(self, event):
         # print event.type
-        if event.type == SWIPE_UP:
-            # self.dirty = True
+        if event.type == SWIPE and event.value == 'up':
+            self.dirty = True
             tmp = self.vkey.run('')
             accn = tmp
             if accn != '':
@@ -150,13 +174,11 @@ class myScreen(PiInfoScreen):
                     self.store(accn)
                 else:
                     print "DUPLICATE ACCN - NOT FILED"
-            # if accn != '':
-            # if RACK_DB.last_filed:
-            #     if accn != '' and accn != RACK_DB.last_filed['accn']:
-            #         self.store(accn)
-            return
+            return True
         if event.type == KEYDOWN and event.key == K_RETURN:
+            self.dirty = True
             accn = self.barcode_input.value
+            self.barcode_input.value = ''
             if accn != '':
                 # self.dirty = True
                 if RACK_DB.last_filed == None:
@@ -165,37 +187,42 @@ class myScreen(PiInfoScreen):
                     self.store(accn)
                 else:
                     print "DUPLICATE ACCN - NOT FILED"
-        self.barcode_input.update(event)
+            return True
+        if self.barcode_input.update(event):
+            self.dirty = True
+            return True
+        else:
+            # self.dirty = False
+            return False
+
     def store(self, accn):
-        # self.dirty = True
         RACK_DB.file_accn(accn)
         self.accn_box.update_text("Last Filed: " + accn)
         self.accn_box.update()
+        self.screen_objects['accn_box']['dirty'] = True
         self.update_indicator()
 
     def update_locations(self):
         pass
 
     def exit_function(self):
-        pass
-        # self.dirty = True
+        self.screen.fill(COLORS['CLOUD'])
+        # self.title.update()
+        self.dirty = True
 
     def showScreen(self):
-        # if self.clock.text == strftime("%H:%M", localtime(time())):
-            # if self.dirty == False:
-                # return self.screen
-            # else:
-                # self.dirty = True
-
-        # self.dirty = False
-        self.hint_surface.blit(self.hint_text.update(), (0, 0))
+        self.update_indicator()
         file_string = gui_objects.format_location(RACK_DB.next)
+        if file_string != self.info2.text:
+            self.info2.update_text(file_string)
+            self.info2.update()
+            self.screen_objects['info2']['dirty'] = True
+
         self.location_indicator.update()
-        self.info2.update_text(file_string)
-        self.info2.update()
-        # if self.clock.text == strftime("%H:%M", localtime(time())):
-        self.clock.update_text(strftime("%H:%M", localtime(time())))
-        self.clock.update()
-        self.accn_box.update()
-        self.screen.blit(self.surface, (0, 0))
+        tmstmp = strftime("%H:%M", localtime(time()))
+        if self.clock.text != tmstmp:
+                self.clock.update_text(tmstmp)
+                self.clock.update()
+                self.screen_objects['clock']['dirty'] = True
+        self.refresh_objects()
         return self.screen

@@ -5,7 +5,7 @@ import gui_objects
 from time import strftime, localtime, time
 from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
-from global_variables import COLORS, ICONS, SCREEN_TIMEOUT
+from global_variables import COLORS, ICONS, TITLE_RECT, SCREEN_TIMEOUT
 from displayscreen import PiInfoScreen
 from keyboard import VirtualKeyboard
 from database import RACK_DB
@@ -38,7 +38,7 @@ class myScreen(PiInfoScreen):
 
 
 
-        self.surface.fill(COLORS['CLOUD'])
+        self.screen.fill(COLORS['CLOUD'])
         self.hint_text.update_string("scan to locate\nswipe up for keyboard")
         self.title.update()
         self.hint_surface.blit(self.hint_text.update(), (0, 0))
@@ -49,10 +49,9 @@ class myScreen(PiInfoScreen):
         self.icon_font = pygame.font.Font(
             ICONS.font_location,
             50)  # keyboard font
-
         # This is the box where location results go
         self.result_rect = pygame.Rect(0, 120, 320, 90)
-        self.result_surface = self.surface.subsurface(self.result_rect)
+        self.result_surface = pygame.Surface(self.result_rect.size)
         self.result_text = gui_objects.render_textrect(
             string="",
             font=self.fonts['result_font']['font'],
@@ -65,7 +64,13 @@ class myScreen(PiInfoScreen):
             MinFont=self.fonts['result_font']['size'] - 10,
             MaxFont=self.fonts['result_font']['size'],
             shrink=True,
-            vjustification=1)
+            vjustification=1, screen=self.result_surface)
+        self.screen_objects['result_text'] = {
+                'object': self.result_text, 
+                'surface': self.result_surface, 
+                'rect': self.result_rect,
+                'dirty': True
+                }
 
         self.not_found =pygame.image.load(os.path.join(self.plugindir, 'resources', 'GG.png'))
         self.not_found_rect = self.not_found.get_rect()
@@ -74,7 +79,7 @@ class myScreen(PiInfoScreen):
 
         # TOP INFO BAR
         self.info0_rect = pygame.Rect(5, 95, 310, 25)
-        self.info0_surface = self.surface.subsurface(self.info0_rect)
+        self.info0_surface = pygame.Surface(self.info0_rect.size)
         self.info0 = gui_objects.text_label(
             surface=self.info0_surface,
             font=self.fonts['info_font']['font'],
@@ -84,10 +89,16 @@ class myScreen(PiInfoScreen):
             valign='bottom',
             align="center",
             background_color=COLORS['CLOUD'])
+        self.screen_objects['info0'] = {
+                'object': self.info0, 
+                'surface': self.info0_surface, 
+                'rect': self.info0_rect,
+                'dirty': True
+                }
 
         # BOTTOM INFO BAR
         self.info1_rect = pygame.Rect(5, 205, 310, 20)
-        self.info1_surface = self.surface.subsurface(self.info1_rect)
+        self.info1_surface = pygame.Surface(self.info1_rect.size)
         self.info1 = gui_objects.text_label(
             surface=self.info1_surface,
             font=self.fonts['info_font']['font'],
@@ -99,6 +110,16 @@ class myScreen(PiInfoScreen):
             valign='center',
             align="center",
             background_color=COLORS['CLOUD'])
+        self.screen_objects['info1'] = {
+                'object': self.info1, 
+                'surface': self.info1_surface, 
+                'rect': self.info1_rect,
+                'dirty': True
+                }
+
+        for thing in self.screen_objects:
+            self.screen_objects[thing]['object'].update()
+            self.screen_objects[thing]['object'].dirty = True
 
     def reset(self):
         self.hint_surface.fill(COLORS['CLOUD'])
@@ -113,31 +134,29 @@ class myScreen(PiInfoScreen):
         self.result_text.cutoff = False
 
     def event_handler(self, event):
+        evt_used = False
         accn = ''
-        if event.type == SWIPE_UP:
+        if event.type == SWIPE and event.value == 'up':
             accn = self.vkey.run('')
             self.accn_box.update_text("Accn#: " + str(accn))
+            evt_used = True
+            self.dirty = True
         elif event.type == KEYDOWN and event.key == K_RETURN:
+            evt_used = True
             accn = self.barcode_input.value
             self.barcode_input.value = ''
             if accn != '':
                 self.accn_box.update_text("Accn#: " + str(accn))
-                # RACK_DB.file_accn(accn)
         else:
-            self.barcode_input.update(event)
+            evt_used = self.barcode_input.update(event)
         if accn != '':
+            self.dirty = True
             self.new_result = True
             self.reset()
             self.timeout = time() + self.timeout_delay
             self.timer = True
             result = RACK_DB.find_accn(accn)
             if not result:
-                # self.result_text.font = self.icon_font
-                # self.result_text.shrink = False
-                # self.result_text.string = ICONS.unicode('emoticon-sad')
-                # self.result_text.update()
-                # self.result_surface.blit(self.not_found, 
-
                 self.info0.update_text(accn)
                 self.info1.update_text("Good Grief! That tube is missing.")
             else:
@@ -158,37 +177,33 @@ class myScreen(PiInfoScreen):
                 for item in reversed_list:
                     formated.append(gui_objects.format_location(item))
                 self.result_text.update_string("\n".join(formated))
-    # self.accn_input.update(event)
-
+        return evt_used
     def update_locations(self):
         pass
     def exit_function(self):
+        self.screen.fill(COLORS['CLOUD'])
         self.dirty = True
 
     def showScreen(self):
+        self.refresh_objects()
         if self.timer:
             if self.timeout > time():
                 if self.new_result:
                     self.new_result = False
                     # NOT FOUND
                     if self.info1.text == "Good Grief! That tube is missing.":
-                        self.result_surface.blit(
-                            self.not_found, self.not_found_rect)
+                        self.screen.blit(
+                            self.not_found, self.hint_rect)
                         self.accn_box.update()
-                        pass
+                        # pass
                     else:
                         # FOUND
                         self.accn_box.update()
-                        self.result_surface.blit(
-                            self.result_text.update(), (0, 0))
+                        self.screen_objects['accn_box']['dirty'] = True
+                        self.screen_objects['result_text']['dirty'] = True
+                        # self.result_surface.blit(
+                            # self.result_text.update(), (0, 0))
             else:
                 self.timer = False
                 self.reset()
-                self.hint_surface.blit(self.hint_text.update(), (0, 0))
-        # if self.clock.text != strftime("%H:%M", localtime(time())):
-        self.clock.update_text(strftime("%H:%M", localtime(time())))
-        self.clock.update()
-        self.info0.update()
-        self.info1.update()
-        self.screen.blit(self.surface, (0, 0))
         return self.screen

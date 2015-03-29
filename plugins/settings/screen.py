@@ -4,7 +4,7 @@ import subprocess
 # import pygame
 from time import strftime, localtime, time, sleep
 from change_time import change_time
-from global_variables import COLORS, piscreenevents, ICONS, SWIPE_UP, SWIPE_DOWN
+from global_variables import COLORS, piscreenevents, TITLE_RECT, ICONS, SWIPE
 from displayscreen import PiInfoScreen
 from database import RACK_DB
 from button import button
@@ -24,7 +24,6 @@ class myScreen(PiInfoScreen):
 
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
-        
         self.vkey_surface = pygame.display.get_surface()
         self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
 
@@ -33,10 +32,12 @@ class myScreen(PiInfoScreen):
         self.clock_dirty = False
         self.minus = ICONS.unicode('down-open')
         self.plus = ICONS.unicode('up-open')
-        self.surface.fill(COLORS['CLOUD'])
+        self.screen.fill(COLORS['CLOUD'])
         self.hint_text.update_string(self.default_message)
-        self.title.update()
 
+        self.screen_objects['hint_text']['dirt'] = True
+
+        self.title.update()
 
 
         self.shell_commands = {
@@ -81,7 +82,7 @@ class myScreen(PiInfoScreen):
         self.hint_surface.blit(self.hint_text.update(), (0, 0))
         self.clock.update_text(' ')
         self.clock.update()
-        self.screen.blit(self.surface, (0, 0))
+        # self.screen.blit(self.surface, (0, 0))
         pygame.display.flip()
 
     def database_size(self):
@@ -97,11 +98,12 @@ class myScreen(PiInfoScreen):
         self.hint_text.update_string("Finished Optomizing\nIt's now safe to leave this screen")
 
     def event_handler(self, event):
-        if event.type == SWIPE_UP:
+        if event.type == SWIPE and event.value == 'up':
             self.dirty = True
             tmp = self.vkey.run('')
             self.run_command(tmp)
-            return
+            return True
+        return False
 
     def run_command(self, command):
         if command in self.shell_commands:
@@ -116,18 +118,17 @@ class myScreen(PiInfoScreen):
         self.clock.update()
         for b in self.buttons:
             b.update()
-        self.screen.blit(self.surface, (0, 0))
+        # self.screen.blit(self.surface, (0, 0))
 
     def showScreen(self):
-        if self.setting_visible:
-            self.settings_screen = self.show_settings()
-            return self.screen
-        else:
-            self.hint_surface.blit(self.hint_text.update(), (0, 0))
-            self.clock.update_text(strftime("%H:%M", localtime(time())))
-            self.clock.update()
-            self.screen.blit(self.surface, (0, 0))
+            # self.hint_surface.blit(self.hint_text.update(), (0, 0))
+            # self.clock.update_text(strftime("%H:%M", localtime(time())))
+            # self.clock.update()
+            self.refresh_objects()
+            # self.screen.blit(self.surface, (0, 0))
             return self.screen
 
     def exit_function(self):
+        self.screen.fill(COLORS['CLOUD'])
+        self.dirty = True
         self.hint_text.update_string(self.default_message)

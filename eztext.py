@@ -67,6 +67,7 @@ class Input:
     def update(self, event):
         # """ Update the input based on passed events """
         # for event in events:
+        starting_value = self.value
         if event.type == KEYUP:
             if event.key == K_LSHIFT or event.key == K_RSHIFT:
                 self.shifted = False
@@ -271,6 +272,8 @@ class Input:
                     self.value += '>'
                 elif event.key == K_SLASH and '?' in self.restricted:
                     self.value += '?'
-        # print self.value
-        # if len(self.value) > self.maxlength and self.maxlength >= 0:
-            # self.value = self.value[:-1]
+
+        if self.value == starting_value:
+            return False
+        else:
+            return True

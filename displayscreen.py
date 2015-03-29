@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import time
 # import urllib2
 import gui_objects
 import eztext
@@ -8,7 +9,7 @@ from configobj import ConfigObj
 from validate import Validator
 from global_variables import COLORS, TITLE_RECT, FONTS, PLUGIN_VALIDATOR, piscreenevents
 
-from pprint import pprint
+from pprintpp import pprint
 sys.dont_write_bytecode = True
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -50,15 +51,17 @@ class PiInfoScreen():
             self.supported = False
         else:
             self.supported = True
-
+        self.dirty = True
         # Initialise pygame for the class
-        if self.supported or scale:
-            pygame.init()
-            self.screen = pygame.display.set_mode(self.screensize)
-            self.surfacesize = self.supportedsizes[0]
-            self.surface = pygame.Surface(self.surfacesize)
+        # if self.supported or scale:
+        pygame.init()
+        self.screen = pygame.display.set_mode(self.screensize)
+        self.surfacesize = self.supportedsizes[0]
+            # self.surface = pygame.Surface(self.surfacesize)
 
-        self.title_surface = self.surface.subsurface(TITLE_RECT)
+
+        self.screen_objects = {}
+        self.title_surface = pygame.Surface(TITLE_RECT.size)
         self.title = gui_objects.title_banner(
             surface=self.title_surface,
             title_icon=self.title_icon,
@@ -70,8 +73,10 @@ class PiInfoScreen():
             background_color=self.color,
             banner_location = self.banner_location)
 
+        
+
         self.hint_rect = pygame.Rect(0, 120, 320, 70)
-        self.hint_surface = self.surface.subsurface(self.hint_rect)
+        self.hint_surface = pygame.Surface(self.hint_rect.size)
         self.hint_text = gui_objects.render_textrect(
             string="scan to locate\nswipe up for keyboard",
             font=FONTS['swipe_font']['font'],
@@ -84,10 +89,13 @@ class PiInfoScreen():
             MinFont=FONTS['swipe_font']['size'] - 4,
             MaxFont=FONTS['swipe_font']['size'],
             shrink=True,
-            vjustification=1)
+            vjustification=1,screen=self.hint_surface)
+        # self.hint_text.update()
+
+        
 
         self.clock_rect = pygame.Rect(255, 0, 60, 25)
-        self.clock_surface = self.surface.subsurface(self.clock_rect)
+        self.clock_surface = pygame.Surface(self.clock_rect.size)
         self.clock = gui_objects.text_label(
             surface=self.clock_surface,
             font=FONTS['clock_font']['font'],
@@ -97,9 +105,8 @@ class PiInfoScreen():
             valign='bottom',
             align="right",
             background_color=COLORS['CLOUD'])
-
         self.accn_rect = pygame.Rect(5, 0, 250, 25)
-        self.accn_surface = self.surface.subsurface(self.accn_rect)
+        self.accn_surface = pygame.Surface(self.accn_rect.size)
         self.accn_box = gui_objects.text_label(
             surface=self.accn_surface,
             font=FONTS['input_font']['font'],
@@ -109,7 +116,32 @@ class PiInfoScreen():
             valign='bottom',
             align="left",
             background_color=COLORS['CLOUD'])
-        self.accn_box.update()
+        # self.accn_box.update()
+        self.screen_objects['accn_box'] = {
+                'object': self.accn_box, 
+                'surface': self.accn_surface, 
+                'rect': self.accn_rect,
+                'dirty': True
+                }
+        self.screen_objects['clock'] = {
+                'object': self.clock, 
+                'surface': self.clock_surface, 
+                'rect': self.clock_rect,
+                'dirty': True
+                }
+        self.screen_objects['hint_text'] = {
+                'object': self.hint_text, 
+                'surface': self.hint_surface, 
+                'rect': self.hint_rect,
+                'dirty': True
+                }
+        self.screen_objects['title'] = {
+                'object': self.title, 
+                'surface': self.title_surface, 
+                'rect': TITLE_RECT,
+                'dirty': True
+                }
+
 
     # Read the plugin's config file and dump contents to a dictionary
     def readConfig(self):
@@ -249,11 +281,30 @@ class PiInfoScreen():
 
         return self.screen
 
+    def refresh_objects(self):
+        if self.dirty:
+            self.screen.fill(COLORS['CLOUD'])
+            for thing in self.screen_objects:
+                pprint(thing)
+                # value = self.screen_objects[key]
+                self.screen.fill(COLORS['CLOUD'], self.screen_objects[thing]['rect'])
+                self.screen.blit(self.screen_objects[thing]['surface'], 
+                    self.screen_objects[thing]['rect'])
+                self.screen_objects[thing]['dirty'] = False
+        else:
+            for thing in self.screen_objects:
+                if self.screen_objects[thing]['dirty']:
+                    # pygame.display.get_surface().unlock()
+                    self.screen.fill(COLORS['CLOUD'], self.screen_objects[thing]['rect'])
+                    self.screen.blit(self.screen_objects[thing]['surface'], 
+                        self.screen_objects[thing]['rect'])
+                    self.screen_objects[thing]['dirty'] = False
+                    # sleep(.2)
+        self.dirty = False
+
+
     def event_handler(self, event):
-        pass
+        return False
 
     def setUpdateTimer(self):
         pass
-        # pygame.time.set_timer(self.userevents["update"], 0)
-        # pygame.time.set_timer(
-            # self.userevents["update"], int(self.refreshtime * 1000))
