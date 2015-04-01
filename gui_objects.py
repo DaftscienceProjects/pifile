@@ -15,131 +15,6 @@ sys.dont_write_bytecode = True
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
-# this class takes an array of text and fonts then renders them
-class text_label(pygame.sprite.Sprite):
-
-    def __init__(self, *args, **kwargs):
-        pygame.sprite.Sprite.__init__(self)
-        self.dirty = True
-        self.surface = kwargs['surface']
-        self.font = kwargs['font']
-        self.text = kwargs['text']
-        self.color = kwargs['color']
-        if 'valign' in kwargs:
-            self.valign = kwargs['valign']
-        else:
-            self.valign = 'center'
-
-        if 'rounded' in kwargs:
-            self.rounded = kwargs['rounded']
-        else:
-            self.rounded = False
-
-        if 'align' in kwargs:
-            self.align = kwargs['align']
-        else:
-            self.align = 'center'
-
-        if 'background_color' in kwargs:
-            self.background_color = kwargs['background_color']
-        else:
-            self.background_color = None
-        if 'rect' in kwargs:
-            self.rect = kwargs['rect']
-            # self.rect.size
-        else:
-            self.rect = None
-
-    def update_text(self, string):
-        if self.text == string:
-            return
-        else:
-            self.dirty = True
-            self.text = string
-
-    def blit_text(self):
-        self.label = self.font.render(self.text, 1, self.color)
-        # get the size of the text object
-        self.fontRect = self.label.get_rect()
-        # create the text object
-        if self.align == 'left':
-            self.fontRect.left = self.surface.get_rect().left
-        elif self.align == 'right':
-            self.fontRect.right = self.surface.get_rect().right
-        else:
-            self.fontRect.centerx = self.surface.get_rect().centerx
-        if self.valign == 'top':
-            self.fontRect.top = 0
-        elif self.valign == 'bottom':
-            self.fontRect.bottom = self.rect.height
-        else:
-            self.fontRect.centery = self.surface.get_rect().centery
-
-    def update(self):
-        if self.dirty:
-            print "dirty " + self.text
-            self.dirty = False
-            self.blit_text()
-            self.surface.fill(self.background_color)
-            self.surface.blit(self.label, self.fontRect)
-            return self.surface
-        else:
-            return self.surface
-
-
-class title_banner(text_label):
-
-    def __init__(self, *args, **kwargs):
-        self.title_icon = kwargs['title_icon']
-        super(title_banner, self).__init__(*args, **kwargs)
-        self.surface.get_size()
-        self.blit_text()
-        self.banner_location = kwargs['banner_location']
-
-        if REBUILD_BANNER:
-            self.build_banner()
-        else:
-            try:
-                self.pygameImage = pygame.image.load(self.banner_location)
-            except:
-                self.build_banner()
-        self.blit_text()
-
-    def build_banner(self):
-        self.banner = rounded_rect(
-            (self.surface.get_size()),
-            radius=CORNER_RADIUS,
-            fill=self.background_color,
-            background_color=BACKGROUND_COLOR,
-            shadow=False)
-
-        self.rect = self.surface.get_rect()
-
-        self.pygameImage = pygame.image.fromstring(
-            self.banner.image.tostring(),
-            self.banner.image.size,
-            'RGBA',
-            False).convert_alpha()
-        pygame.image.save(self.pygameImage, self.banner_location)
-
-
-    def update(self):
-        self.surface.blit(self.pygameImage, (0, 0))
-        # pygame.draw.rect(self.surface, (0,0,0), self.fontRect, 1)
-        
-        self.fontRect.top = self.fontRect.top + 4
-        self.surface.blit(self.label, self.fontRect)
-
-        fa = pygame.font.Font(ICONS.font_location, BANNNER_ICON_SIZE)
-        icon = fa.render(ICONS.unicode(self.title_icon), 1, self.color)
-
-        icon_rect = icon.get_rect()
-        icon_rect.centerx = self.fontRect.left / 2
-        icon_rect.centery = self.fontRect.centery - 4
-
-        self.surface.blit(icon, icon_rect)
-
-
 def format_location(item):
     row = ROWS[str(item['row'])]
     rack = str(item['rack'])
@@ -158,26 +33,67 @@ def format_location(item):
 
 class render_textrect():
 
-    def __init__(self, string, font, rect, text_color,
-                 background_color, justification=0, vjustification=0,
-                 margin=0, shrink=False, SysFont=None, FontPath=None,
-                 MaxFont=50, MinFont=5, cutoff=True, screen=None):
-        self.string = string
-        self.font = font
-        self.rect = rect
-        self.text_color = text_color
-        self.background_color = background_color
-        self.justification = justification
-        self.vjustification = vjustification
-        self.margin = margin
-        self.cutoff = cutoff
-        self.shrink = shrink
-        self.SysFont = SysFont
-        self.FontPath = FontPath
-        self.MaxFont = MaxFont
-        self.MinFont = MinFont
-        self.surface = None
-        self.screen = screen
+    # def __init__(self, string, font, rect,
+                 # background_color, justification=0, vjustification=0,
+                 # margin=0, shrink=False, SysFont=None, FontPath=None,
+                 # MaxFont=50, MinFont=5, cutoff=True, screen=None):
+
+    def __init__(self, *args, **kwargs):
+
+        self.string = kwargs['string']
+
+        self.font_info = kwargs['font']
+        if 'trim' in self.font_info:
+            print "found trim"
+            self.trim = self.font_info['trim']
+        else:
+            self.trim = 1
+        self.font = self.font_info['font']
+        self.FontPath = self.font_info['path']
+        self.text_color = self.font_info['color']
+        self.MaxFont = self.font_info['size']
+        self.MinFont = self.font_info['size'] - 5
+
+        self.screen = kwargs['screen']
+        self.rect = kwargs['rect']
+        self.background_color = kwargs['background_color']
+
+        
+        if 'SysFont' in kwargs:
+            self.SysFont = kwargs['SysFont']
+        else:
+            self.SysFont = None
+
+        if 'h_align' in kwargs:
+            self.h_align = kwargs['h_align']
+        else:
+            self.h_align = 'center'
+
+        if 'v_align' in kwargs:
+            self.v_align = kwargs['v_align']
+        else:
+            self.v_align = 'center'
+
+        if 'margin' in kwargs:
+            self.margin = kwargs['margin']
+            if not len(self.margin) == 4:
+                try:
+                    self.margin = (int(self.margin),
+                                   int(self.margin),
+                                   int(self.margin),
+                                   int(self.margin))
+                except:
+                    self.margin = (0, 0, 0, 0)
+        else:
+            self.margin = (0, 0, 0, 0)
+        if 'cutoff' in kwargs:
+            self.cutoff = kwargs['cutoff']
+        else:
+            self.cutoff = False
+        if 'shrink' in kwargs:
+            self.shrink = kwargs['shrink']
+        else:
+            self.shrink = False
         self.dirty = True
 
         if isinstance(self.margin, tuple):
@@ -193,45 +109,48 @@ class render_textrect():
             self.margin = (self.margin, self.margin, self.margin, self.margin)
         else:
             self.margin = (0, 0, 0, 0)
+
     def update_string(self, string):
-        
-        if self.string == string:
-            return
-        else:
-            self.dirty = True
+        if self.string != string:
+            print "String Changed " + string
             self.string = string
+            self.dirty = True
+            self.update()
+
+    def get_screen(self):
+        self.dirty = False
+        return self.screen
 
     def update(self):
-        if not self.dirty:
-            return self.surface
+        self.fontsize = self.MaxFont
+        if not self.shrink:
+            # print "not shrunk"
+            self.screen = self.draw_text_rect()
         else:
-            self.fontsize = self.MaxFont
-            if not self.shrink:
-                # print "not shrunk"
-                surface = self.draw_text_rect()
-            else:
-                fit = False
-                while self.fontsize >= self.MinFont:
-                    if self.FontPath is None:
-                        self.font = pygame.font.SysFont(
-                            self.SysFont,
-                            self.fontsize)
-                    else:
-                        # print "found font"
-                        self.font = pygame.font.Font(self.FontPath, self.fontsize)
-                    try:
-                        surface = self.draw_text_rect()
-                        fit = True
-                        break
-                    except self.TextRectException:
-                        self.fontsize -= 1
-                        # print "trying new font" + str(self.fontsize)
-                if not fit:
-                    self.cutoff = True
-                    # print "shrunk to font: " + str(self.fontsize)
-                    self.font = pygame.font.Font(self.FontPath, self.fontsize)
+            fit = False
+            while self.fontsize >= self.MinFont:
+                if self.FontPath is None:
+                    self.font = pygame.font.SysFont(
+                        self.SysFont,
+                        self.fontsize)
+                else:
+                    # print "found font"
+                    self.font = pygame.font.Font(
+                        self.FontPath,
+                        self.fontsize)
+                try:
                     surface = self.draw_text_rect()
-            return self.draw_text_rect()
+                    fit = True
+                    break
+                except self.TextRectException:
+                    self.fontsize -= 1
+                    # print "trying new font" + str(self.fontsize)
+            if not fit:
+                self.cutoff = True
+                # print "shrunk to font: " + str(self.fontsize)
+                self.font = pygame.font.Font(self.FontPath, self.fontsize)
+                self.screen = self.draw_text_rect()
+        self.screen = self.draw_text_rect()
 
     class TextRectException(Exception):
 
@@ -242,274 +161,94 @@ class render_textrect():
             return self.message
 
     def draw_text_rect(self):
-        final_lines = []
-        requested_lines = self.string.splitlines()
-        # Create a series of lines that will fit on the provided
-        # rectangle.
-        # Let's try to write the text out on the surface.
+        print self.string
+        padded_surface = pygame.Surface(self.rect.size)
+        padded_surface.fill(self.background_color)
+        # padded_surface.fill((169,169,169))
 
-        surface = pygame.Surface(self.rect.size)
+        text_rect = padded_surface.get_rect()
+
+        text_rect.width -= self.margin[0] + self.margin[1]
+        text_rect.height -= self.margin[2] + self.margin[3]
+        surface = pygame.Surface(text_rect.size)
         surface.fill(self.background_color)
+        # surface.fill((200,200,200))
 
-        for requested_line in requested_lines:
-            if self.font.size(requested_line)[0] > self.rect.width:
-                words = requested_line.split(' ')
+        final_lines = []
+        lines = self.string.splitlines()
+        for line in lines:
+            if self.font.size(line)[0] > text_rect.width:
+                words = line.split(' ')
                 # if any of our words are too long to fit, return.
                 for word in words:
-                    if self.font.size(word)[0] >= self.rect.width:
+                    if self.font.size(word)[0] >= text_rect.width:
                         raise TextRectException(
                             "The word " +
                             word +
                             " is too long to fit in the rect passed.")
-                # Start a new line
                 accumulated_line = ""
                 for word in words:
                     test_line = accumulated_line + word + " "
                     # Build the line while the words fit.
-                    if self.font.size(test_line)[0] < self.rect.width:
+                    if self.font.size(test_line)[0] < text_rect.width:
                         accumulated_line = test_line
                     else:
                         final_lines.append(accumulated_line)
                         accumulated_line = word + " "
                 final_lines.append(accumulated_line)
             else:
-                final_lines.append(requested_line)
+                final_lines.append(line)
 
         # Let's try to write the text out on the surface.
 
-        surface = pygame.Surface(self.rect.size)
-        surface.fill(self.background_color)
-
-        accumulated_height = 0
+        # surface = pygame.Surface(self.rect.size)
+        # surface.fill(self.background_color)
+        h = 0
+        _trimming_rect= None
         for line in final_lines:
-            if accumulated_height + \
-                    self.font.size(line)[1] >= self.rect.height:
+            print self.font.size(line)[1]
+            print self.trim
+            if h + (self.font.size(line)[1] * self.trim) >= text_rect.height:
                 raise self.TextRectException(
                     "Once word-wrapped, the text string was too tall to fit in the rect.")
-            if line != "":
+            if line != '':
+                # RENDER THE TEXT
                 tempsurface = self.font.render(line, 1, self.text_color)
-                if self.justification == 0:
-                    surface.blit(tempsurface, (0, accumulated_height))
-                elif self.justification == 1:
-                    surface.blit(
-                        tempsurface,
-                        ((self.rect.width - tempsurface.get_width()) / 2,
-                         accumulated_height))
-                elif self.justification == 2:
-                    surface.blit(
-                        tempsurface,
-                        (self.rect.width -
-                         tempsurface.get_width(),
-                         accumulated_height))
+                # GET THE SIZE OF TEXT
+                _trimming_rect = tempsurface.get_rect()
+                # CUT THE PADDING OFF THE BOTTOM OF THE TEXT
+                _trimming_rect.top = h
+                _trimming_rect.height = int(_trimming_rect.height * self.trim)
+
+                if self.h_align == 'left':
+                    _trimming_rect.left = 0
+                    surface.blit(tempsurface, _trimming_rect)
+                elif self.h_align == 'center':
+                    _trimming_rect.centerx = text_rect.centerx
+                    surface.blit(tempsurface, _trimming_rect)
+                elif self.h_align == 'right':
+                    _trimming_rect.left = text_rect.width - _trimming_rect.width
+                    surface.blit(tempsurface, _trimming_rect)
                 else:
                     raise TextRectException(
-                        "Invalid justification argument: " + str(self.justification))
-            accumulated_height += self.font.size(line)[1]
+                        "Invalid justification argument: " + str(self.h_align))
+            h += _trimming_rect.height
 
-        if self.vjustification == 0:
-            # Top aligned, we're ok
+        text_rect.height = h
+        if self.v_align == 'top':
+            text_rect.top = self.margin[0]
             pass
-        elif self.vjustification == 1:
-            # Middle aligned
-            tempsurface = pygame.Surface(self.rect.size)
-            tempsurface.fill(self.background_color)
-            vpos = (0, (self.rect.size[1] - accumulated_height) / 2)
-            tempsurface.blit(
-                surface, vpos, (0, 0, self.rect.size[0], accumulated_height))
-            surface = tempsurface
-        elif self.vjustification == 2:
-            # Bottom aligned
-            tempsurface = pygame.Surface(self.rect.size)
-            tempsurface.fill(self.background_color)
-            vpos = (
-                0,
-                (self.rect.size[1] -
-                 accumulated_height -
-                 self.margin[3]))
-            tempsurface.blit(
-                surface, vpos, (0, 0, self.rect.size[0], accumulated_height))
-            surface = tempsurface
+        elif self.v_align == 'center':
+            text_rect.centery = self.rect.height/2
+        elif self.v_align == 'bottom':
+            text_rect.bottom = self.rect.height - self.margin[3]
+            # surface = tempsurface
         else:
             raise self.TextRectException(
                 "Invalid vjustification argument: " +
-                str(justification))
-        self.surface = surface
-        if self.screen:
-            self.screen.blit(surface, (0,0))
-        return surface
-    surface = None
-
-
-class rounded_rect():
-
-    def __init__(self, og_size, radius, fill, background_color, shadow=False):
-        self.quality = SHADING_QUALITY
-        self.og_size = og_size
-        self.radius = radius * self.quality
-        self.fill = fill
-        self.background_color = background_color
-        # to get better quality corners we will scale the
-        # image up then shink it back down
-        self.border = BORDER * SHADING_QUALITY
-        self.size = (
-            self.og_size[0] *
-            self.quality,
-            self.og_size[1] *
-            self.quality)
-        self.width, self.height = self.size
-        # if shadow:
-        self.image = self.round_rectangle()
-        # else:
-            # self.image = self.makeShadow(
-                # image=self.round_rectangle(),
-                # offset=(0 * SHADING_QUALITY, 0 * SHADING_QUALITY),
-                # background=self.background_color,
-                # shadow=0x444444,
-                # border=self.border,
-                # iterations=SHADING_ITERATIONS)
-        # self.image = self.image.resize(self.og_size, resample=Image.LANCZOS)
-        self.image = self.image
-
-    def round_corner(self):
-        """Draw a round corner"""
-        corner = Image.new('RGBA', (self.radius, self.radius), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(corner)
-        # print self.fill
-        draw.pieslice(
-            (0, 0, self.radius * 2, self.radius * 2),
-            180,
-            270,
-            fill=self.fill)
-            # fill=(123,123,123,0))
-        corner.convert('RGBA')
-        return corner
-
-    def round_rectangle(self):
-        """Draw a rounded rectangle"""
-        rectangle = Image.new('RGBA', self.size)
-        # ImageDraw.Draw.rectangle(size, (0,0,0,0))
-        origCorner = self.round_corner()
-        corner = origCorner
-        rectangle.paste(corner, (0, 0))
-        corner = origCorner.rotate(90)
-        rectangle.paste(corner, (0, self.height - self.radius))
-        corner = origCorner.rotate(180)
-        rectangle.paste(
-            corner,
-            (self.width -
-             self.radius,
-             self.height -
-             self.radius))
-        corner = origCorner.rotate(270)
-        rectangle.paste(corner, (self.width - self.radius, 0))
-
-        dr = ImageDraw.Draw(rectangle)
-        dl = ImageDraw.Draw(rectangle)
-        dr.rectangle(
-            ((self.width - self.radius, 0), ((self.radius), (self.height))), fill=self.fill)
-        dl.rectangle(
-            ((0, self.radius), ((self.width), (self.height - self.radius))), fill=self.fill)
-        # pprint(rectangle)
-        return rectangle
-
-    # def makeShadow(self,
-    #                image,
-    #                iterations,
-    #                border,
-    #                offset,
-    #                backgroundColour,
-    #                shadowColour):
-    # image: base image to give a drop shadow
-    # iterations: number of times to apply the blur filter to the shadow
-    # border: border to give the image to leave space for the shadow
-    # offset: offset of the shadow as [x,y]
-    # backgroundCOlour: colour of the background
-    # shadowColour: colour of the drop shadow
-
-    # Calculate the size of the shadow's image
-    #     fullWidth = image.size[0] + abs(offset[0]) + border
-    # fullWidth = image.size[0] + abs(offset[0]) + 2 * border
-    # fullHeight = image.size[1] + abs(offset[1]) + 2 * border
-    #     fullHeight = image.size[1] + abs(offset[1]) + border
-    # Create the shadow's image. Match the parent image's mode.
-    #     shadow = Image.new(
-    #         image.mode,
-    #         (fullWidth,
-    #          fullHeight),
-    #         backgroundColour)
-    # Place the shadow, with the required offset
-    # if <0, push the rest of the image right
-    #     shadowLeft = border/2 + max(offset[0], 0)
-    # if <0, push the rest of the image down
-    #     shadowTop = border/2 + max(offset[1], 0)
-    # Paste in the constant colour
-    #     shadow.paste(shadowColour,
-    #                  [shadowLeft, shadowTop,
-    #                   shadowLeft + image.size[0],
-    #                   shadowTop + image.size[1]])
-    # i=2
-    # Apply the BLUR filter repeatedly
-    #     for i in range(iterations):
-    #         shadow = shadow.filter(ImageFilter.BLUR)
-    # shadow.show()
-
-    # Paste the original image on top of the shadow
-    # if the shadow offset was <0, push right
-    #     imgLeft = border - min(offset[0], 0)
-    # if the shadow offset was <0, push down
-    #     imgTop = border - min(offset[1], 0)
-    #     shadow.paste(image, (imgLeft, imgTop))
-    #     shadow.show()
-    #     return shadow
-
-    def makeShadow(self, image, offset=(5, 5), background=0xffffff, shadow=0x444444,
-                   border=8, iterations=3):
-        """
-        Add a gaussian blur drop shadow to an image.  
-
-        image       - The image to overlay on top of the shadow.
-        offset      - Offset of the shadow from the image as an (x,y) tuple.  Can be
-                      positive or negative.
-        background  - Background colour behind the image.
-        shadow      - Shadow colour (darkness).
-        border      - Width of the border around the image.  This must be wide
-                      enough to account for the blurring of the shadow.
-        iterations  - Number of times to apply the filter.  More iterations 
-                      produce a more blurred shadow, but increase processing time.
-        """
-
-        # Create the backdrop image -- a box in the background colour with a
-        # shadow on it.
-        totalWidth = image.size[0] + abs(offset[0]) + 2 * border
-        totalHeight = image.size[1] + abs(offset[1]) + 2 * border
-        back = Image.new(image.mode, (totalWidth, totalHeight), background)
-
-        # Place the shadow, taking into account the offset from the image
-        shadowLeft = border + max(offset[0], 0)
-        shadowTop = border + max(offset[1], 0)
-        back.paste(shadow, [shadowLeft, shadowTop, shadowLeft + image.size[0],
-                            shadowTop + image.size[1]])
-
-        # Apply the filter to blur the edges of the shadow.  Since a small kernel
-        # is used, the filter must be applied repeatedly to get a decent blur.
-        n = 0
-        while n < iterations:
-            back = back.filter(ImageFilter.BLUR)
-            n += 1
-
-        # Paste the input image onto the shadow backdrop
-        imageLeft = border - min(offset[0], 0)
-        imageTop = border - min(offset[1], 0)
-        back.paste(image, (imageLeft, imageTop))
-
-        return back
-
+                str(v_align))
+        padded_surface.blit(surface, text_rect)
+        return padded_surface
 
 if __name__ == "__main__":
-    from global_variables import COLORS
-    img = rounded_rect((310, 60), 10, COLORS['PURPLE'], 10, shadow=True)
-    print img.image.size
-    # img.image.show()
-    print img.image.mode
-    # print newIMG.verify()
-    # img.image.save('zzz.png')
+    pass

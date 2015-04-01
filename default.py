@@ -27,21 +27,16 @@ pygame.mouse.set_visible(False if RASPBERRYPI else True)
 clock = pygame.time.Clock()
 screenindex = 0
 stats_rect = pygame.Rect(228, 190, 90, 50)
-stats_surface = screen.subsurface(stats_rect)
+stats_surface = pygame.Surface(stats_rect.size)
 
+stats_surface2 = screen.subsurface(stats_rect)
 stats_text = render_textrect(
     string="",
-    font=FONTS['fps_font']['font'],
+    font=FONTS['fps_font'],
     rect=stats_rect,
-    text_color=FONTS['fps_font']['color'],
     background_color=COLORS['CLOUD'],
-    justification=0,
-    FontPath=FONTS['fps_font']['path'],
-    cutoff=True,
-    MinFont=FONTS['fps_font']['size'] - 4,
-    MaxFont=FONTS['fps_font']['size'],
-    shrink=True,
-    vjustification=0)
+    screen = stats_surface)
+
 
 cpu_pol = []
 _cpu = ''
@@ -49,26 +44,22 @@ def show_fps():
     global cpu_pol, _cpu
     _mem = format(psutil.virtual_memory().percent, "3.2f")
     _fps = format(clock.get_fps(), "3.2f")
-    if len(cpu_pol) < 20:
+    if len(cpu_pol) < 10:
         cpu_pol.append(psutil.cpu_percent(interval=None))
     else:
         _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), "3.2f")
         cpu_pol = []
-    stats_text.string = "FPS: "+_fps + '\n' 
-    stats_text.string += 'CPU: ' + _cpu + '%\n'
-    stats_text.string += 'Mem: ' + _mem + '%'
-    # fps_img = FONTS['fps_font']['font'].render(_fps, 1, FONTS['fps_font']['color'])
-    stats_surface.blit(stats_text.update(), (0,0))
+    string = "FPS:  "+_fps + '\n' 
+    string += 'CPU %: ' + _cpu + '\n'
+    string += 'Mem %: ' + _mem
+
+    stats_text.update_string(string)
+    screen.blit(stats_text.get_screen(), stats_rect)
 
 quit = False
-# b = pygame.time.get_ticks()
 d = 0
 newscreen = False
 newwait = 0
-# refresh = 60000
-# refreshNow = False
-# SWIPE_TO_SCREEN = 0
-# CURRENT_SCREEN = -1
 
 
 def log(message):
@@ -76,11 +67,6 @@ def log(message):
     if debug:
         print message
 
-# ##############################################################################
-# Plugin handling code adapted from:
-# http://lkubuntu.wordpress.com/2012/10/02/writing-a-python-plugin-api/
-# THANK YOU!
-# # ######################################################################
 
 
 def getPlugins():
@@ -147,18 +133,13 @@ def showWelcomeScreen():
 message_rect = screen.get_rect()
 message_text = render_textrect(
     string="loading",
-    font=loading_font,
+    font=FONTS['swipe_font'],
     rect=message_rect,
-    text_color=COLORS['CLOUD'],
     background_color=COLORS['CLOUD'],
     justification=1,
-    FontPath=FONTS['swipe_font']['path'],
-    cutoff=False,
     margin = (5,5),
-    MinFont=FONTS['swipe_font']['size'] - 4,
-    MaxFont=FONTS['swipe_font']['size'],
     shrink=True,
-    vjustification=1)
+    screen = screen)
 
 def showLoadedPlugin(plugin):
     '''Display a temporary screen to show when a module is successfully
@@ -182,7 +163,7 @@ def showLoadedPlugin(plugin):
 
     message_text.string = " ".join(tmp)
     message_text.text_color = plugin.color
-    screen.blit(message_text.update(), (0,0))
+    screen.blit(message_text.get_screen(), (0,0))
     pygame.display.flip()
     sleep(LOADING_TIME)
     screen.fill(COLORS['CLOUD'])
@@ -208,8 +189,6 @@ def showNewScreen():
     screen = pluginScreens[screenindex].showScreen()
     stptime = time()
     plugdiff = int((stptime - strttime) * 2000)
-    # print plugdiff
-    # setUpdateTimer(plugdiff)
     pygame.display.flip()
 
 #############################################################################
@@ -311,8 +290,9 @@ while not quit:
                 elif event.value =='right':
                     screenindex = setNextScreen(-1, screenindex)
     screen = pluginScreens[screenindex].showScreen()
-    if SHOW_FPS:
-        show_fps()
+    # if SHOW_FPS:
+        # show_fps()
+    show_fps()
     clock.tick(FPS)
     pygame.display.flip()
 

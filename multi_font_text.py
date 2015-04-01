@@ -6,24 +6,25 @@ import time
 
 class multi_font():
 
-    def __init__(self, surface, items, background_color = (255,255,255, 0)):
+    def __init__(self, surface, rect, items, background_color = (255,255,255, 0)):
         self.items = items
         self.images = []
+        self.rect = rect
         self.background_color = background_color
         self.dirty = True
-        self.surface = surface
-        self.surface.convert_alpha()
-        self.surface_rect = self.surface.get_rect()
+        self.screen = surface
+        self.screen.convert_alpha()
+        self.surface_rect = self.screen.get_rect()
         self.update()
 
     def update(self):
         if self.dirty:
             self.create_image()
             self.dirty = False
-        self.rect.centerx = self.surface_rect.centerx
-        self.rect.centery = self.surface_rect.centery
-    	self.surface.fill(self.background_color)
-        self.surface.blit(self.combine_images, self.rect)
+        self._rect.centerx = self.surface_rect.centerx
+        self._rect.centery = self.surface_rect.centery
+    	self.screen.fill(self.background_color)
+        self.screen.blit(self.combine_images, self._rect)
 
     def create_image(self):
     	self.images = []
@@ -44,7 +45,7 @@ class multi_font():
                 max_height = item_height
             total_width += item_width
 
-        self.rect = pygame.Rect(0, 0, total_width, max_height)
+        self._rect = pygame.Rect(0, 0, total_width, max_height)
         self.combine_images = pygame.Surface((total_width, max_height))
         self.combine_images.fill(self.background_color)
         self.combine_images.convert_alpha()

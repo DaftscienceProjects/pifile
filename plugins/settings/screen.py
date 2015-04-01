@@ -4,7 +4,7 @@ import subprocess
 # import pygame
 from time import strftime, localtime, time, sleep
 from change_time import change_time
-from global_variables import COLORS, piscreenevents, TITLE_RECT, ICONS, SWIPE
+from global_variables import COLORS, piscreenevents, ICONS, SWIPE
 from displayscreen import PiInfoScreen
 from database import RACK_DB
 from button import button
@@ -27,17 +27,14 @@ class myScreen(PiInfoScreen):
         self.vkey_surface = pygame.display.get_surface()
         self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
 
+        self.dirty = True
+
         self.default_message = "Please use caution\nEnter: 'F1' to optimize database"
-        self.setting_visible = False
-        self.clock_dirty = False
-        self.minus = ICONS.unicode('down-open')
-        self.plus = ICONS.unicode('up-open')
+
         self.screen.fill(COLORS['CLOUD'])
         self.hint_text.update_string(self.default_message)
 
-        self.screen_objects['hint_text']['dirt'] = True
-
-        self.title.update()
+        # self.title.update()
 
 
         self.shell_commands = {
@@ -52,6 +49,9 @@ class myScreen(PiInfoScreen):
             'F8': self.apply_patch,
             'F22': self.quit
         }
+        for thing in self.screen_objects:
+            thing.update()
+
     def quit(self):
         pygame.quit()
 
@@ -79,11 +79,8 @@ class myScreen(PiInfoScreen):
 
     def update_message(self,msg):
         self.hint_text.update_string(msg)
-        self.hint_surface.blit(self.hint_text.update(), (0, 0))
-        self.clock.update_text(' ')
-        self.clock.update()
-        # self.screen.blit(self.surface, (0, 0))
-        pygame.display.flip()
+        self.screen.blit(self.hint_text.screen, self.hint_text.rect)
+        self.hint_text.dirty = True
 
     def database_size(self):
         text = 'DATABASE SIZE\n'
@@ -109,23 +106,11 @@ class myScreen(PiInfoScreen):
         if command in self.shell_commands:
             subprocess.call(self.shell_commands[command], shell=True)
         if command in self.commands:
-            # print "run command"
             self.commands[command]()
 
-    def show_settings(self):
-        self.hint_surface.fill(COLORS['CLOUD'])
-        self.clock.update_text(strftime("%H:%M", localtime(time())))
-        self.clock.update()
-        for b in self.buttons:
-            b.update()
-        # self.screen.blit(self.surface, (0, 0))
-
     def showScreen(self):
-            # self.hint_surface.blit(self.hint_text.update(), (0, 0))
-            # self.clock.update_text(strftime("%H:%M", localtime(time())))
-            # self.clock.update()
             self.refresh_objects()
-            # self.screen.blit(self.surface, (0, 0))
+            
             return self.screen
 
     def exit_function(self):

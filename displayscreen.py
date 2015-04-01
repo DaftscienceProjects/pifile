@@ -7,7 +7,7 @@ import gui_objects
 import eztext
 from configobj import ConfigObj
 from validate import Validator
-from global_variables import COLORS, TITLE_RECT, FONTS, PLUGIN_VALIDATOR, piscreenevents
+from global_variables import COLORS, FONTS, PLUGIN_VALIDATOR, piscreenevents
 
 from pprintpp import pprint
 sys.dont_write_bytecode = True
@@ -53,106 +53,77 @@ class PiInfoScreen():
             self.supported = True
         self.dirty = True
         # Initialise pygame for the class
-        # if self.supported or scale:
         pygame.init()
         self.screen = pygame.display.set_mode(self.screensize)
         self.surfacesize = self.supportedsizes[0]
-            # self.surface = pygame.Surface(self.surfacesize)
 
+        title_rect = pygame.Rect(0, 25, 320, 70)
+        title_surface = pygame.Surface(title_rect.size)
+        self.title = gui_objects.render_textrect(
+            string = self.name,
+            font=FONTS['title_font'],
+            rect=title_rect,
+            margin = (0, 0, 0, 0),
+            v_align = 'center',
+            h_align = 'center',
 
-        self.screen_objects = {}
-        self.title_surface = pygame.Surface(TITLE_RECT.size)
-        self.title = gui_objects.title_banner(
-            surface=self.title_surface,
-            title_icon=self.title_icon,
-            font=FONTS['title_font']['font'],
-            text=self.name,
-            color=FONTS['title_font']['color'],
-            rect=TITLE_RECT,
-            rounded=False,
             background_color=self.color,
-            banner_location = self.banner_location)
+            screen=title_surface)
 
-        
-
-        self.hint_rect = pygame.Rect(0, 120, 320, 70)
-        self.hint_surface = pygame.Surface(self.hint_rect.size)
+        hint_rect = pygame.Rect(0, 120, 320, 70)
+        hint_surface = pygame.Surface(hint_rect.size)
         self.hint_text = gui_objects.render_textrect(
-            string="scan to locate\nswipe up for keyboard",
-            font=FONTS['swipe_font']['font'],
-            rect=self.hint_rect,
-            text_color=self.color,
+            string='',
+            font=FONTS['swipe_font'],
+            rect=hint_rect,
             background_color=COLORS['CLOUD'],
-            justification=1,
-            FontPath=FONTS['swipe_font']['path'],
-            cutoff=False,
             MinFont=FONTS['swipe_font']['size'] - 4,
             MaxFont=FONTS['swipe_font']['size'],
             shrink=True,
-            vjustification=1,screen=self.hint_surface)
-        # self.hint_text.update()
+            screen=hint_surface)
+        self.hint_text.text_color = self.color
 
-        
+        clock_rect = pygame.Rect(255, 0, 60, 25)
+        clock_surface = pygame.Surface(clock_rect.size)
+        self.clock = gui_objects.render_textrect(
+            string = '',
+            font=FONTS['clock_font'],
+            rect=clock_rect,
+            background_color=COLORS['CLOUD'],
+            cutoff=False,
+            h_align='right',
+            screen=title_surface)
 
-        self.clock_rect = pygame.Rect(255, 0, 60, 25)
-        self.clock_surface = pygame.Surface(self.clock_rect.size)
-        self.clock = gui_objects.text_label(
-            surface=self.clock_surface,
-            font=FONTS['clock_font']['font'],
-            text='',
-            color=FONTS['clock_font']['color'],
-            rect=self.clock_rect,
-            valign='bottom',
-            align="right",
-            background_color=COLORS['CLOUD'])
-        self.accn_rect = pygame.Rect(5, 0, 250, 25)
-        self.accn_surface = pygame.Surface(self.accn_rect.size)
-        self.accn_box = gui_objects.text_label(
-            surface=self.accn_surface,
-            font=FONTS['input_font']['font'],
-            text='',
-            color=FONTS['input_font']['color'],
-            rect=self.accn_rect,
-            valign='bottom',
-            align="left",
-            background_color=COLORS['CLOUD'])
-        # self.accn_box.update()
-        self.screen_objects['accn_box'] = {
-                'object': self.accn_box, 
-                'surface': self.accn_surface, 
-                'rect': self.accn_rect,
-                'dirty': True
-                }
-        self.screen_objects['clock'] = {
-                'object': self.clock, 
-                'surface': self.clock_surface, 
-                'rect': self.clock_rect,
-                'dirty': True
-                }
-        self.screen_objects['hint_text'] = {
-                'object': self.hint_text, 
-                'surface': self.hint_surface, 
-                'rect': self.hint_rect,
-                'dirty': True
-                }
-        self.screen_objects['title'] = {
-                'object': self.title, 
-                'surface': self.title_surface, 
-                'rect': TITLE_RECT,
-                'dirty': True
-                }
+        accn_rect = pygame.Rect(5, 0, 250, 25)
+        accn_surface = pygame.Surface(accn_rect.size)
+        self.accn_box = gui_objects.render_textrect(
+            string = '',
+            font=FONTS['input_font'],
+            rect=accn_rect,
+            background_color=COLORS['CLOUD'],
+            cutoff=True,
+            h_align = 'left',
+            MinFont=FONTS['input_font']['size'] - 4,
+            MaxFont=FONTS['input_font']['size'],
+            shrink=True,
+            screen=accn_surface)
 
+        self.screen_objects = [
+            self.accn_box,
+            self.clock,
+            self.hint_text,
+            self.title
+            ]
 
     # Read the plugin's config file and dump contents to a dictionary
     def readConfig(self):
         validator = Validator()
-        # print self.configfile
+        print self.configfile
         configspec = ConfigObj(PLUGIN_VALIDATOR, interpolation=False, list_values=True,
                        _inspec=True)
         self.pluginConfig = ConfigObj(self.configfile, configspec=configspec)
         result = self.pluginConfig.validate(validator)
         if result != True:
-            pprint(result)
             print 'Config file validation failed!'
 
         self.setPluginVariables()
@@ -186,7 +157,10 @@ class PiInfoScreen():
             font_file = font['font']
             font_size = font['size']
             font_shade = font['shade']
-            # font_size = int(font['size'])
+            if 'trim' in font:
+                font_trim = font['trim']
+            else:
+                font_trim = .9
             font_color = COLORS[font['color']][font_shade]
 
             font_location = os.path.join("resources/fonts", font_file)
@@ -195,6 +169,7 @@ class PiInfoScreen():
                 'font': pygame.font.Font(font_location, font_size),
                 'color': font_color,
                 'path': font_location,
+                'trim': font_trim,
                 'size': font_size}
 
     # Tells the main script that the plugin is compatible with the requested
@@ -285,21 +260,12 @@ class PiInfoScreen():
         if self.dirty:
             self.screen.fill(COLORS['CLOUD'])
             for thing in self.screen_objects:
-                pprint(thing)
-                # value = self.screen_objects[key]
-                self.screen.fill(COLORS['CLOUD'], self.screen_objects[thing]['rect'])
-                self.screen.blit(self.screen_objects[thing]['surface'], 
-                    self.screen_objects[thing]['rect'])
-                self.screen_objects[thing]['dirty'] = False
+                self.screen.blit(thing.screen, thing.rect)
+                # thing.dirty = False
         else:
             for thing in self.screen_objects:
-                if self.screen_objects[thing]['dirty']:
-                    # pygame.display.get_surface().unlock()
-                    self.screen.fill(COLORS['CLOUD'], self.screen_objects[thing]['rect'])
-                    self.screen.blit(self.screen_objects[thing]['surface'], 
-                        self.screen_objects[thing]['rect'])
-                    self.screen_objects[thing]['dirty'] = False
-                    # sleep(.2)
+                self.screen.blit(thing.screen, thing.rect)
+                    # thing.dirty = False
         self.dirty = False
 
 

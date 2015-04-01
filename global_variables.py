@@ -166,12 +166,17 @@ for key in _CONFIG['fonts']:
     font = _CONFIG['fonts'][key]
     font_file = font['font']
     font_size = font['size']
+    if 'trim' in font:
+        font_trim = font['trim']
+    else:
+        font_trim = 1
     font_shade = font['shade']
     font_color = COLORS[font['color']][font_shade]
     font_location = os.path.join("resources/fonts", font_file)
     FONTS[key] = {
         'font': pygame.font.Font(font_location, font_size),
         'color': font_color,
+        'trim': font_trim,
         'path': font_location,
         'size': font_size}
     # pprint(FONTS)
@@ -216,8 +221,8 @@ ROWS = {'1': 'A',
 
 # TITLE_RECT = pygame.Rect(3, 30, 314, 60)
 # these probably shouldnt be here
-TITLE_RECT = pygame.Rect(0, 25, 320, 70)
-SWIPE_HINT_RECT = pygame.Rect(0, 210, 320, 30)
+# TITLE_RECT = (0, 25, 320, 70)
+SWIPE_HINT_RECT = (0, 210, 320, 30)
 
 
 # this is where the icon stuff is kept
