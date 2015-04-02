@@ -17,14 +17,11 @@ class multi_font():
         self.surface_rect = self.screen.get_rect()
         self.update()
     def get_screen(self):
-        if self.dirty:
-            self.update()
         return self.screen
 
     def update(self):
         if self.dirty:
             self.create_image()
-            self.dirty = False
         self._rect.centerx = self.surface_rect.centerx
         self._rect.centery = self.surface_rect.centery
     	self.screen.fill(self.background_color)
