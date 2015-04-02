@@ -131,6 +131,7 @@ class myScreen(PiInfoScreen):
             li_items.append(item)
         self.location_indicator.items = li_items
         self.location_indicator.dirty = True
+        self.location_indicator.update()
 
     def event_handler(self, event):
         accn = ''
