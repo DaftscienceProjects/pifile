@@ -169,8 +169,8 @@ class myScreen(PiInfoScreen):
         self.dirty = True
 
     def showScreen(self):
-        self.update_indicator()
-        self.location_indicator.update()
+        # self.update_indicator()
+        # self.location_indicator.update()
 
         file_string = gui_objects.format_location(RACK_DB.next)
         self.info2.update_string(file_string)
