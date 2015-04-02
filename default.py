@@ -271,13 +271,15 @@ def longPress(downTime):
         return False
 
 # Run our main loop
-
+last_delta = 0
 swype = swipe()
+_rect = screen.get_rect()
 # pygame.event.set_blocked([1,4])
 while not quit:
     for event in pygame.event.get():
         if swype.event_handler(event):
-            continue
+            # continue
+            pass
         event_used = pluginScreens[screenindex].event_handler(event)
         if not event_used:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
@@ -292,20 +294,42 @@ while not quit:
                 # mouseDownPos = pygame.mouse.get_pos()
                 getSwipeType()
             if (event.type == pygame.MOUSEBUTTONUP):
-                mouseUpPos = pygame.mouse.get_pos()
-                swipe = getSwipeType()
-            if event.type == SWIPE:
-                if event.value == 'left':
+                gest = swype.last_swipe
+                print gest
+                if gest == 'left':
+                    while _rect.left != _rect.width:
+                        # _rect.left = delta
+                        pluginScreens[other_screen].make_copy()
+                        pluginScreens[screenindex].make_copy()
+                        screen.blit(pluginScreens[other_screen].showScreen(), (0,0))
+                        screen.blit(pluginScreens[screenindex].showScreen(), _rect)
+                        pygame.display.update()
+                        _rect.left += 1
                     screenindex = setNextScreen(1, screenindex)
-                elif event.value =='right':
+                if gest == 'right':
+                    while _rect.left != -_rect.width:
+                        # _rect.left = delta
+                        pluginScreens[other_screen].make_copy()
+                        pluginScreens[screenindex].make_copy()
+                        screen.blit(pluginScreens[other_screen].showScreen(), (0,0))
+                        screen.blit(pluginScreens[screenindex].showScreen(), _rect)
+                        pygame.display.update()
+                        _rect.left -= 1
                     screenindex = setNextScreen(-1, screenindex)
+                        # sleep()
+                mouseUpPos = pygame.mouse.get_pos()
+            if event.type == SWIPE:
+                pass
+                # if event.value == 'left':
+                # elif event.value =='right':
+                    
     if swype.is_down:
-        
         delta_x = swype.x_delta
         delta_y = swype.y_delta
         # screen.fill(COLORS['CLOUD'])
         if abs(delta_x) > abs(delta_y):
             delta = delta_x
+            last_delta = delta
             if delta > 0:
                 other_screen = screenindex + 1
             if delta < 0:
@@ -315,7 +339,6 @@ while not quit:
             if other_screen > len(pluginScreens) - 1:
                 other_screen = 0
             pluginScreens[screenindex].dirty = True
-            _rect = screen.get_rect()
             _rect.left = delta
             pluginScreens[other_screen].make_copy()
             pluginScreens[screenindex].make_copy()

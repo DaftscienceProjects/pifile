@@ -21,6 +21,7 @@ class swipe():
 		self.x_delta = 0
 		self.y_delta = 0
 		self.is_down = False
+		self.last_swipe = None
 
 	def set_down(self):
 		self.down_pos = pygame.mouse.get_pos()
@@ -77,5 +78,6 @@ class swipe():
 		    if x < 0:
 		        swipe = 'right'
 		pygame.event.post(pygame.event.Event(SWIPE, value=swipe))
+		self.last_swipe = swipe
 		return True
 
