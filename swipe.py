@@ -6,7 +6,7 @@ mouseDownTime = 0
 mouseDownPos = (0, 0)
 mouseUpPos = (0, 0)
 # Mouse related variables
-minSwipe = 30
+minSwipe = 25
 maxClick = 10
 longPressTime = 200
 
@@ -19,6 +19,7 @@ class swipe():
 		self.mouse_up = None
 		self.mouse_down_time = None
 		self.x_delta = 0
+		self.y_delta = 0
 		self.is_down = False
 
 	def set_down(self):
@@ -32,19 +33,20 @@ class swipe():
 		self.last_pos = None
 		self.is_down = False
 		self.x_delta = 0
+		self.y_delta = 0
 
 	def delta(self):
 		new_pos = pygame.mouse.get_pos()
 		x_down, y_down = self.last_pos
 		x_new, y_new = new_pos
 		x = x_new - x_down
+		y = y_new - y_down
 		self.x_delta = x
+		self.y_delta = y
 		# self.last_pos = new_pos
-		# y = y_new - y_down
 
 
 	def event_handler(self, event):
-		pprint(event)
 		if (event.type == pygame.MOUSEBUTTONDOWN):
 			self.set_down()
 			return False

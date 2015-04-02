@@ -114,6 +114,6 @@ class myScreen(PiInfoScreen):
             return self.screen
 
     def exit_function(self):
-        self.screen.fill(COLORS['CLOUD'])
+        # self.screen.fill(COLORS['CLOUD'])
         self.dirty = True
         self.hint_text.update_string(self.default_message)
