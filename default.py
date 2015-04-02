@@ -46,7 +46,7 @@ def show_fps():
     global cpu_pol, _cpu
     _mem = format(psutil.virtual_memory().percent, "3.2f")
     _fps = format(clock.get_fps(), "3.2f")
-    if len(cpu_pol) < 40:
+    if len(cpu_pol) < 10:
         cpu_pol.append(psutil.cpu_percent(interval=None))
     else:
         _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), "3.2f")
