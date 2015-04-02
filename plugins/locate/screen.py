@@ -86,17 +86,18 @@ class myScreen(PiInfoScreen):
         if event.type == SWIPE and event.value == 'up':
             self.dirty = True
             accn = self.vkey.run('')
-            self.accn_box.update_string("Accn#: " + str(accn))
             evt_used = True
         elif event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
             self.barcode_input.value = ''
-            if accn != '':
-                self.accn_box.update_string("Accn#: " + str(accn))
             evt_used = True
         else:
             evt_used = self.barcode_input.update(event)
+        
         if accn != '':
+            if len(accn) > 14:
+                return False
+            self.accn_box.update_string("Accn#: " + str(accn))
             self.timeout = time() + self.timeout_delay
             result = RACK_DB.find_accn(accn)
             if not result:

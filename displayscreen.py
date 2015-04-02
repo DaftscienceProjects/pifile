@@ -80,10 +80,11 @@ class PiInfoScreen():
         clock_surface = pygame.Surface(clock_rect.size)
         self.clock = gui_objects.render_textrect(
             string = '',
-            font=FONTS['clock_font'],
+            font=FONTS['input_font'],
             rect=clock_rect,
             background_color=COLORS['CLOUD'],
             h_align='right',
+            v_align = 'center',
             screen=title_surface)
 
         accn_rect = pygame.Rect(5, 0, 250, 25)
@@ -94,7 +95,9 @@ class PiInfoScreen():
             rect=accn_rect,
             background_color=COLORS['CLOUD'],
             h_align = 'left',
+            v_align = 'center',
             screen=accn_surface)
+        # self.accn_box.margin['bottom'] = 1
 
         self.screen_objects = [
             self.accn_box,

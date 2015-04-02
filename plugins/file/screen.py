@@ -103,9 +103,7 @@ class myScreen(PiInfoScreen):
             'size': 23,
             'color': self.color
         }
-
         li_items.append(item)
-        # self.info1.text = ''
         size = 18
         while len(li_items) - 1 < RACK_DB.next['column']:
             if (len(li_items)) == RACK_DB.next['column']:
@@ -135,35 +133,26 @@ class myScreen(PiInfoScreen):
         self.location_indicator.dirty = True
 
     def event_handler(self, event):
-        # print event.type
+        accn = ''
         if event.type == SWIPE and event.value == 'up':
             self.dirty = True
-            tmp = self.vkey.run('')
-            accn = tmp
-            if accn != '':
-                # self.dirty = True
-                if RACK_DB.last_filed == None:
-                    self.store(accn)
-                elif accn != RACK_DB.last_filed['accn']:
-                    self.store(accn)
-                else:
-                    print "DUPLICATE ACCN - NOT FILED"
-            return True
+            accn = self.vkey.run('')
         if event.type == KEYDOWN and event.key == K_RETURN:
             accn = self.barcode_input.value
             self.barcode_input.value = ''
-            if accn != '':
-                if RACK_DB.last_filed == None:
-                    self.store(accn)
-                elif accn != RACK_DB.last_filed['accn']:
-                    self.store(accn)
-                else:
-                    print "DUPLICATE ACCN - NOT FILED"
+        if accn != '':
+            if len(accn) > 14:
+                return False
+            if RACK_DB.last_filed == None:
+                self.store(accn)
+            elif accn != RACK_DB.last_filed['accn']:
+                self.store(accn)
+            else:
+                print "DUPLICATE ACCN - NOT FILED"
             return True
         if self.barcode_input.update(event):
             return True
-        else:
-            return False
+        return False
 
     def store(self, accn):
         RACK_DB.file_accn(accn)
