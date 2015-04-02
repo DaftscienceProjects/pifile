@@ -87,6 +87,8 @@ class myScreen(PiInfoScreen):
             COLORS['CLOUD'])
         self.screen_objects.append(self.location_indicator)
 
+        file_string = gui_objects.format_location(RACK_DB.next)
+        self.info2.update_string(file_string)
 
         li_row_font = 'OpenSans-Semibold.ttf'
         self.li_row_font = os.path.join("resources/fonts", li_row_font)
