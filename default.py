@@ -296,25 +296,29 @@ while not quit:
             if (event.type == pygame.MOUSEBUTTONUP):
                 gest = swype.last_swipe
                 print gest
+                accel = 2
                 if gest == 'left':
-                    while _rect.left != _rect.width:
+                    while _rect.left < _rect.width:
                         # _rect.left = delta
                         pluginScreens[other_screen].make_copy()
                         pluginScreens[screenindex].make_copy()
                         screen.blit(pluginScreens[other_screen].showScreen(), (0,0))
                         screen.blit(pluginScreens[screenindex].showScreen(), _rect)
                         pygame.display.update()
-                        _rect.left += 1
+                        _rect.left += 3 + accel
+                        accel += 5
+
                     screenindex = setNextScreen(1, screenindex)
                 if gest == 'right':
-                    while _rect.left != -_rect.width:
+                    while _rect.left > -_rect.width:
                         # _rect.left = delta
                         pluginScreens[other_screen].make_copy()
                         pluginScreens[screenindex].make_copy()
                         screen.blit(pluginScreens[other_screen].showScreen(), (0,0))
                         screen.blit(pluginScreens[screenindex].showScreen(), _rect)
                         pygame.display.update()
-                        _rect.left -= 1
+                        _rect.left -= 3 + accel
+                        accel += 5
                     screenindex = setNextScreen(-1, screenindex)
                         # sleep()
                 mouseUpPos = pygame.mouse.get_pos()
