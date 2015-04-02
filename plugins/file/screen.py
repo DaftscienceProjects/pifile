@@ -1,14 +1,14 @@
 import sys
 import pygame
 import os
-# from time imp
 import gui_objects
 from pprint import pprint
 from time import time, strftime, localtime
 from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
 from multi_font_text import multi_font
-from global_variables import COLORS, SWIPE, ICONS, DATABASE_SETTINGS, ROWS, piscreenevents
+from global_variables import COLORS, SWIPE, ROWS, piscreenevents
+from global_variables import FONTS, ICONS, DATABASE_SETTINGS
 from displayscreen import PiInfoScreen
 from keyboard import VirtualKeyboard
 from database import RACK_DB
@@ -36,20 +36,20 @@ class myScreen(PiInfoScreen):
         self.hint_text.update_string("scan to store\nswipe up for keyboard")
 
         if RACK_DB.last_filed:
-            self.accn_box.update_string("Last Filed: " + RACK_DB.last_filed['accn'])
+            self.accn_box.update_string("Prev: " + RACK_DB.last_filed['accn'])
         else:
             self.accn_box.update_string("Unavailable")
 
         self.barcode_input = Input()
         info0_text = "Next Location: "
-        info0_size = self.fonts['default_font']['font'].render(info0_text, 1, (0, 0, 0))
+        info0_size = FONTS['input_font']['font'].render(info0_text, 1, (0, 0, 0))
         w = info0_size.get_rect().width
 
         info0_rect = pygame.Rect(5, 95, w, 25)
         info0_surface = pygame.Surface(info0_rect.size)
         self.info0 = gui_objects.render_textrect(
             string = info0_text,
-            font=self.fonts['default_font'],
+            font=FONTS['input_font'],
             rect=info0_rect,
             background_color=COLORS['CLOUD'],
             screen=info0_surface)
@@ -64,7 +64,7 @@ class myScreen(PiInfoScreen):
         info2_surface = pygame.Surface(info2_rect.size)
         self.info2 = gui_objects.render_textrect(
             string = '',
-            font=self.fonts['default_font'],
+            font=FONTS['input_font'],
             rect=info2_rect,
             background_color=COLORS['CLOUD'],
             h_align = 'left',
@@ -150,11 +150,9 @@ class myScreen(PiInfoScreen):
                     print "DUPLICATE ACCN - NOT FILED"
             return True
         if event.type == KEYDOWN and event.key == K_RETURN:
-            self.dirty = True
             accn = self.barcode_input.value
             self.barcode_input.value = ''
             if accn != '':
-                # self.dirty = True
                 if RACK_DB.last_filed == None:
                     self.store(accn)
                 elif accn != RACK_DB.last_filed['accn']:
@@ -163,17 +161,14 @@ class myScreen(PiInfoScreen):
                     print "DUPLICATE ACCN - NOT FILED"
             return True
         if self.barcode_input.update(event):
-            self.dirty = True
             return True
         else:
-            # self.dirty = False
             return False
 
     def store(self, accn):
         RACK_DB.file_accn(accn)
-        self.accn_box.update_string("Last Filed: " + accn)
+        self.accn_box.update_string("Prev: " + accn)
         self.accn_box.update()
-        # self.screen_objects['accn_box']['dirty'] = True
         self.update_indicator()
 
     def update_locations(self):
@@ -181,12 +176,10 @@ class myScreen(PiInfoScreen):
 
     def exit_function(self):
         self.screen.fill(COLORS['CLOUD'])
-        # self.title.update()
         self.dirty = True
 
     def showScreen(self):
         self.update_indicator()
-
         self.location_indicator.update()
 
         file_string = gui_objects.format_location(RACK_DB.next)

@@ -16,6 +16,8 @@ class multi_font():
         self.screen.convert_alpha()
         self.surface_rect = self.screen.get_rect()
         self.update()
+    def get_screen(self):
+        return self.screen
 
     def update(self):
         if self.dirty:
@@ -28,7 +30,6 @@ class multi_font():
 
     def create_image(self):
     	self.images = []
-    	# self.combine_images.fill(self.background_color)
         for item in self.items:
             font_location = item['font_location']
             font = pygame.font.Font(font_location, item['size'])
@@ -40,7 +41,6 @@ class multi_font():
         total_width = 0
         for item in self.images:
             item_width, item_height = item.get_size()
-            # print item_height
             if max_height < item_height:
                 max_height = item_height
             total_width += item_width

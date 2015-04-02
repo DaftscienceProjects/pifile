@@ -52,7 +52,6 @@ class PiInfoScreen():
         else:
             self.supported = True
         self.dirty = True
-        # Initialise pygame for the class
         pygame.init()
         self.screen = pygame.display.set_mode(self.screensize)
         self.surfacesize = self.supportedsizes[0]
@@ -63,10 +62,6 @@ class PiInfoScreen():
             string = self.name,
             font=FONTS['title_font'],
             rect=title_rect,
-            margin = (0, 0, 0, 0),
-            v_align = 'center',
-            h_align = 'center',
-
             background_color=self.color,
             screen=title_surface)
 
@@ -77,8 +72,6 @@ class PiInfoScreen():
             font=FONTS['swipe_font'],
             rect=hint_rect,
             background_color=COLORS['CLOUD'],
-            MinFont=FONTS['swipe_font']['size'] - 4,
-            MaxFont=FONTS['swipe_font']['size'],
             shrink=True,
             screen=hint_surface)
         self.hint_text.text_color = self.color
@@ -90,7 +83,6 @@ class PiInfoScreen():
             font=FONTS['clock_font'],
             rect=clock_rect,
             background_color=COLORS['CLOUD'],
-            cutoff=False,
             h_align='right',
             screen=title_surface)
 
@@ -101,11 +93,7 @@ class PiInfoScreen():
             font=FONTS['input_font'],
             rect=accn_rect,
             background_color=COLORS['CLOUD'],
-            cutoff=True,
             h_align = 'left',
-            MinFont=FONTS['input_font']['size'] - 4,
-            MaxFont=FONTS['input_font']['size'],
-            shrink=True,
             screen=accn_surface)
 
         self.screen_objects = [
@@ -258,13 +246,19 @@ class PiInfoScreen():
 
     def refresh_objects(self):
         if self.dirty:
+            print "full refresh"
             self.screen.fill(COLORS['CLOUD'])
             for thing in self.screen_objects:
-                self.screen.blit(thing.screen, thing.rect)
-                # thing.dirty = False
+                # thing.update()
+                _screen = thing.get_screen()
+                if _screen:
+                    self.screen.blit(_screen, thing.rect)
         else:
             for thing in self.screen_objects:
-                self.screen.blit(thing.screen, thing.rect)
+                if thing.dirty:
+                    _screen = thing.get_screen()
+                    if _screen:
+                        self.screen.blit(thing.get_screen(), thing.rect)
                     # thing.dirty = False
         self.dirty = False
 

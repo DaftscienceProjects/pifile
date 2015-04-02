@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import parseIcons
+from time import time, sleep
 from PIL import Image, ImageFilter
 from time import strftime, localtime
 from PIL import ImageDraw, ImageFont
@@ -14,15 +15,12 @@ from pprint import pprint
 sys.dont_write_bytecode = True
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-
 def format_location(item):
     row = ROWS[str(item['row'])]
     rack = str(item['rack'])
     column = str(item['column'])
-    # day = strftime('%a', localtime(RACK_DB.rack_date))
     day = item['rackDay']
     file_string = day + '-' + rack + ': ' + row + '' + column
-    # if time is sent with the list then we will send that too
     try:
         time = strftime("%H:%M %b %d", localtime(item['time']))
         file_string += " @ " + time
@@ -30,21 +28,22 @@ def format_location(item):
         pass
     return file_string
 
+class TextRectException(Exception):
+
+        def __init__(self, message=None):
+            self.message = message
+
+        def __str__(self):
+            return self.message
 
 class render_textrect():
-
-    # def __init__(self, string, font, rect,
-                 # background_color, justification=0, vjustification=0,
-                 # margin=0, shrink=False, SysFont=None, FontPath=None,
-                 # MaxFont=50, MinFont=5, cutoff=True, screen=None):
-
     def __init__(self, *args, **kwargs):
 
         self.string = kwargs['string']
 
         self.font_info = kwargs['font']
         if 'trim' in self.font_info:
-            print "found trim"
+            # print "found trim"
             self.trim = self.font_info['trim']
         else:
             self.trim = 1
@@ -58,7 +57,6 @@ class render_textrect():
         self.rect = kwargs['rect']
         self.background_color = kwargs['background_color']
 
-        
         if 'SysFont' in kwargs:
             self.SysFont = kwargs['SysFont']
         else:
@@ -74,18 +72,15 @@ class render_textrect():
         else:
             self.v_align = 'center'
 
+        sides = ('top', 'bottom', 'left', 'right')
+        self.margin = {}
         if 'margin' in kwargs:
-            self.margin = kwargs['margin']
-            if not len(self.margin) == 4:
-                try:
-                    self.margin = (int(self.margin),
-                                   int(self.margin),
-                                   int(self.margin),
-                                   int(self.margin))
-                except:
-                    self.margin = (0, 0, 0, 0)
-        else:
-            self.margin = (0, 0, 0, 0)
+            _m = kwargs['margin']
+            for side in sides:
+                if side in _m:
+                    self.margin[side] = _m[side]
+        for side in sides: self.margin[side] = 0
+
         if 'cutoff' in kwargs:
             self.cutoff = kwargs['cutoff']
         else:
@@ -96,23 +91,19 @@ class render_textrect():
             self.shrink = False
         self.dirty = True
 
-        if isinstance(self.margin, tuple):
-            if not len(self.margin) == 4:
-                try:
-                    self.margin = (int(self.margin),
-                                   int(self.margin),
-                                   int(self.margin),
-                                   int(self.margin))
-                except:
-                    self.margin = (0, 0, 0, 0)
-        elif isinstance(self.margin, int):
-            self.margin = (self.margin, self.margin, self.margin, self.margin)
-        else:
-            self.margin = (0, 0, 0, 0)
+    def change_font(self, font, color=None):
+        self.font_info = font
+        self.font = self.font_info['font']
+        self.FontPath = self.font_info['path']
+        self.text_color = self.font_info['color']
+        self.MaxFont = self.font_info['size']
+        self.MinFont = self.font_info['size'] - 5
+        if color:
+            self.text_color = color
 
     def update_string(self, string):
         if self.string != string:
-            print "String Changed " + string
+            # print "String Changed " + string
             self.string = string
             self.dirty = True
             self.update()
@@ -142,7 +133,7 @@ class render_textrect():
                     surface = self.draw_text_rect()
                     fit = True
                     break
-                except self.TextRectException:
+                except TextRectException:
                     self.fontsize -= 1
                     # print "trying new font" + str(self.fontsize)
             if not fit:
@@ -152,24 +143,16 @@ class render_textrect():
                 self.screen = self.draw_text_rect()
         self.screen = self.draw_text_rect()
 
-    class TextRectException(Exception):
-
-        def __init__(self, message=None):
-            self.message = message
-
-        def __str__(self):
-            return self.message
-
     def draw_text_rect(self):
-        print self.string
+        # print self.string
         padded_surface = pygame.Surface(self.rect.size)
         padded_surface.fill(self.background_color)
         # padded_surface.fill((169,169,169))
 
         text_rect = padded_surface.get_rect()
 
-        text_rect.width -= self.margin[0] + self.margin[1]
-        text_rect.height -= self.margin[2] + self.margin[3]
+        # text_rect.width -= self.margin[0] + self.margin[1]
+        # text_rect.height -= self.margin[2] + self.margin[3]
         surface = pygame.Surface(text_rect.size)
         surface.fill(self.background_color)
         # surface.fill((200,200,200))
@@ -206,10 +189,9 @@ class render_textrect():
         h = 0
         _trimming_rect= None
         for line in final_lines:
-            print self.font.size(line)[1]
-            print self.trim
-            if h + (self.font.size(line)[1] * self.trim) >= text_rect.height:
-                raise self.TextRectException(
+            new_height = h + (self.font.size(line)[1] * self.trim)
+            if new_height >= self.rect.height:
+                raise TextRectException(
                     "Once word-wrapped, the text string was too tall to fit in the rect.")
             if line != '':
                 # RENDER THE TEXT
@@ -233,22 +215,68 @@ class render_textrect():
                     raise TextRectException(
                         "Invalid justification argument: " + str(self.h_align))
             h += _trimming_rect.height
-
         text_rect.height = h
+        if self.h_align =='left':
+            text_rect.left = self.margin['left']
+        elif self.h_align == 'center':
+            text_rect.centerx = self.rect.width/2
+            text_rect.centerx += self.margin['left']
+            text_rect.centerx -= self.margin['right']
+        elif self.h_align == 'right':
+            text_rect.left = self.rect.width - text_rect.width
+            text_rect.width -= self.margin['right']
         if self.v_align == 'top':
-            text_rect.top = self.margin[0]
+            text_rect.top = self.margin['top']
             pass
         elif self.v_align == 'center':
-            text_rect.centery = self.rect.height/2
+            text_rect.centery = self.rect.height/2 
+            text_rect.centery += self.margin['top']
+            text_rect.centery -= self.margin['bottom']
         elif self.v_align == 'bottom':
-            text_rect.bottom = self.rect.height - self.margin[3]
-            # surface = tempsurface
+            text_rect.bottom = self.rect.height - self.margin['bottom']
         else:
-            raise self.TextRectException(
+            raise TextRectException(
                 "Invalid vjustification argument: " +
                 str(v_align))
         padded_surface.blit(surface, text_rect)
         return padded_surface
+
+class textrect_image(render_textrect):
+    def __init__(self, *args, **kwargs):
+        render_textrect.__init__(self, *args, **kwargs)
+        img = kwargs['img']
+        img_rect = img.get_rect()
+        img_rect.centerx = self.rect.centerx
+
+        self.img = pygame.Surface(self.rect.size)
+        self.img.fill(self.background_color)
+        self.img.blit(img, img_rect)
+        self.show_img = False
+
+    def toggle_screen(self):
+        self.dirty = True
+        self.show_img = not self.show_img
+        print "Toggled screens"
+
+    def get_screen(self):
+        self.dirty = False
+        if self.show_img:
+            print "returning image"
+            return self.img
+        else:
+            return self.screen
+
+    def update_string(self, string):
+        if self.show_img:
+            self.dirty = True
+            self.show_img = False
+        if self.string != string:
+            self.string = string
+            self.dirty = True
+            self.update()
+
+
+
 
 if __name__ == "__main__":
     pass

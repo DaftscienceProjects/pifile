@@ -4,6 +4,7 @@ import imp
 import psutil
 import random
 import traceback
+from swipe import swipe
 from global_variables import *
 from database import RACK_DB
 from time import time, sleep
@@ -256,7 +257,7 @@ def getSwipeType():
             swipe = 'left'
         if x < 0:
             swipe = 'right'
-    print swipe
+    # print swipe
     pygame.event.post(pygame.event.Event(SWIPE, value=swipe))
     return True
 
@@ -267,9 +268,13 @@ def longPress(downTime):
         return False
 
 # Run our main loop
+
+swype = swipe()
 pygame.event.set_blocked([1,4])
 while not quit:
     for event in pygame.event.get():
+        # if swype.event_handler(event):
+            # continue
         event_used = pluginScreens[screenindex].event_handler(event)
         if not event_used:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
@@ -279,8 +284,10 @@ while not quit:
             if event.type == piscreenevents['toggle_fps'].type:
                 SHOW_FPS = not SHOW_FPS
             if (event.type == pygame.MOUSEBUTTONDOWN):
+                # swipe()
                 mouseDownTime = pygame.time.get_ticks()
                 mouseDownPos = pygame.mouse.get_pos()
+                # getSwipeType()
             if (event.type == pygame.MOUSEBUTTONUP):
                 mouseUpPos = pygame.mouse.get_pos()
                 swipe = getSwipeType()
@@ -289,10 +296,28 @@ while not quit:
                     screenindex = setNextScreen(1, screenindex)
                 elif event.value =='right':
                     screenindex = setNextScreen(-1, screenindex)
+    # if swype.is_down:
+        # pluginScreens[screenindex].dirty = True
+        # delta = swype.x_delta
+        # screen.fill(COLORS['CLOUD'])
+        # screen = pluginScreens[screenindex].showScreen()
+        # screen.scroll(dx=delta, dy=0)
+        # if delta > 0:
+
+            # other_screen = screenindex + 1
+            # if other_screen < 0:
+                # other_screen = len(pluginScreens) - 1
+            # if other_screen > len(pluginScreens) - 1:
+                # other_screen = 0
+            # screen = pluginScreens[other_screen].showScreen()
+            # pluginScreens[other_screen].dirty = True
+        
+    # else:
     screen = pluginScreens[screenindex].showScreen()
-    # if SHOW_FPS:
-        # show_fps()
-    show_fps()
+
+    if SHOW_FPS:
+        show_fps()
+    # show_fps()
     clock.tick(FPS)
     pygame.display.flip()
 
