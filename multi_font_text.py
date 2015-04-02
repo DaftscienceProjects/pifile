@@ -17,6 +17,8 @@ class multi_font():
         self.surface_rect = self.screen.get_rect()
         self.update()
     def get_screen(self):
+        if self.dirty:
+            self.update()
         return self.screen
 
     def update(self):
