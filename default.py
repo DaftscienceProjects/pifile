@@ -35,6 +35,7 @@ stats_text = render_textrect(
     string="",
     font=FONTS['fps_font'],
     rect=stats_rect,
+    h_align = 'left',
     background_color=COLORS['CLOUD'],
     screen = stats_surface)
 
@@ -50,7 +51,7 @@ def show_fps():
     else:
         _cpu = format(sum(cpu_pol) / float(len(cpu_pol)), "3.2f")
         cpu_pol = []
-    string = "FPS:  "+_fps + '\n' 
+    string =  'FPS:   ' +_fps + '\n' 
     string += 'CPU %: ' + _cpu + '\n'
     string += 'Mem %: ' + _mem
 
@@ -118,18 +119,18 @@ def showWelcomeScreen():
     '''Display a temporary screen to show it's working
     May not display for long because of later code to show plugin loading
     '''
-    screen.fill(COLORS['CLOUD'])
-    label = loading_font.render(
-        "Initialising screens...",
-        1,
-        COLORS['BLUE-GREY']['600'])
-    labelpos = label.get_rect()
-    labelpos.centerx = screen.get_rect().centerx
-    labelpos.centery = screen.get_rect().centery
-    screen.blit(label, labelpos)
-    pygame.display.flip()
-    # pass
-    # sleep(.5)
+    pass
+    # screen.fill(COLORS['CLOUD'])
+    # label = loading_font.render(
+        # "Initialising screens...",
+        # 1,
+        # COLORS['BLUE-GREY']['600'])
+    # labelpos = label.get_rect()
+    # labelpos.centerx = screen.get_rect().centerx
+    # labelpos.centery = screen.get_rect().centery
+    # screen.blit(label, labelpos)
+    # pygame.display.flip()
+    # sleep(2)
 
 message_rect = screen.get_rect()
 message_text = render_textrect(
@@ -139,7 +140,6 @@ message_text = render_textrect(
     background_color=COLORS['CLOUD'],
     justification=1,
     margin = (5,5),
-    shrink=True,
     screen = screen)
 
 def showLoadedPlugin(plugin):
@@ -162,7 +162,7 @@ def showLoadedPlugin(plugin):
         first_word = tmp[1][:-1] + 'ing'
     tmp[1] = first_word
 
-    message_text.string = " ".join(tmp)
+    message_text.update_string(" ".join(tmp)) 
     message_text.text_color = plugin.color
     screen.blit(message_text.get_screen(), (0,0))
     pygame.display.flip()

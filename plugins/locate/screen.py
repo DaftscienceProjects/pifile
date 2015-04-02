@@ -17,7 +17,6 @@ sys.dont_write_bytecode = True
 
 
 class myScreen(PiInfoScreen):
-    # PiInfoScreen.__init__()
     refreshtime = 1
     displaytime = 5
     pluginname = "File Accn"
@@ -32,7 +31,7 @@ class myScreen(PiInfoScreen):
 
         self.timer = False
         self.timeout = 0
-        self.timeout_delay =  5  # in seconds
+        self.timeout_delay =  SCREEN_TIMEOUT * 60 # in seconds
         self.new_result = False
         self.dirty = True
 
@@ -66,12 +65,14 @@ class myScreen(PiInfoScreen):
 
 
         # # BOTTOM INFO BAR
-        info1_rect = pygame.Rect(5, 205, 310, 20)
+        info1_rect = pygame.Rect(5, 205, 310, 25)
         info1_surface = pygame.Surface(info1_rect.size)
         self.info1 = gui_objects.render_textrect(
             string = '',
             font=self.fonts['info_font'],
             rect=info1_rect,
+            v_align ='top',
+            shrink = True,
             background_color=COLORS['CLOUD'],
             screen=info1_surface)
         self.screen_objects.append(self.info1)
@@ -101,10 +102,11 @@ class myScreen(PiInfoScreen):
             self.timeout = time() + self.timeout_delay
             result = RACK_DB.find_accn(accn)
             if not result:
-                # self.info0.update_string("Accn#: " + str(accn))
-                self.result_text.toggle_screen()
-                self.info1.update_string("Ohh Magoo, you've done it again!")
-                self.info1.dirty = True
+                magoo = "Ohh Magoo, you've done it again!"
+                if not self.result_text.show_img:
+                    self.result_text.toggle_screen()
+                    self.info1.update_string(magoo)
+                    self.info1.dirty = True
             else:
                 # self.info0.update_string("Accn #: " + accn)
                 if len(result) <= 4:
