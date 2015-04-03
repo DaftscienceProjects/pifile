@@ -34,8 +34,6 @@ class myScreen(PiInfoScreen):
         self.screen.fill(COLORS['CLOUD'])
         self.hint_text.update_string(self.default_message)
 
-        # self.title.update()
-
 
         self.shell_commands = {
             'backup': 'cp racks.sqlite racks.sqlite.bak',
@@ -46,36 +44,14 @@ class myScreen(PiInfoScreen):
             'F1': self.clean_database,
             'F2': self.database_size,
             'F3': self.toggle_fps,
-            'F8': self.apply_patch,
             'F22': self.quit
         }
-        for thing in self.screen_objects:
-            thing.update()
 
     def quit(self):
         pygame.quit()
 
     def toggle_fps(self):
         pygame.event.post(self.piscreenevents['toggle_fps'])
-
-    def apply_patch(self):
-        # message = "Starting Update..."
-        # self.update_message(message)
-        message ="-Backing up database"
-        # sleep(1)
-        self.update_message(message)
-        subprocess.call(self.shell_commands['backup'], shell=True)
-        # sleep(1)
-        message +="\n -Downloading patch"
-        self.update_message(message)
-        # subprocess.call(self.shell_commands['update'], shell=True)
-        # sleep(1)
-        message += "\n -Downloading modules"
-        self.update_message(message)
-        subprocess.call('pip install -r requirements.txt', shell=True)
-        self.update_message('Update Complete\nRestarting now')
-        sleep(2)
-        subprocess.call(self.shell_commands['restart'], shell=True)
 
     def update_message(self,msg):
         self.hint_text.update_string(msg)
@@ -110,7 +86,6 @@ class myScreen(PiInfoScreen):
 
     def showScreen(self):
             self.refresh_objects()
-            
             return self.screen
 
     def exit_function(self):

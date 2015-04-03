@@ -90,6 +90,7 @@ class render_textrect():
         else:
             self.shrink = False
         self.dirty = True
+        self._update()
 
     def change_font(self, font, color=None):
         self.font_info = font
@@ -106,13 +107,14 @@ class render_textrect():
             # print "String Changed " + string
             self.string = string
             self.dirty = True
-            self.update()
+            self._update()
 
     def get_screen(self):
         self.dirty = False
         return self.screen
 
-    def update(self):
+    def _update(self):
+        print "Updatating Thing"
         self.fontsize = self.MaxFont
         if not self.shrink:
             # print "not shrunk"
@@ -252,6 +254,7 @@ class textrect_image(render_textrect):
         self.img.fill(self.background_color)
         self.img.blit(img, img_rect)
         self.show_img = False
+        self._update()
 
     def toggle_screen(self):
         self.dirty = True
@@ -273,7 +276,7 @@ class textrect_image(render_textrect):
         if self.string != string:
             self.string = string
             self.dirty = True
-            self.update()
+            self._update()
 
 
 

@@ -77,8 +77,6 @@ class myScreen(PiInfoScreen):
             screen=info1_surface)
         self.screen_objects.append(self.info1)
 
-        for thing in self.screen_objects:
-            thing.update()
         self.dirty = True
 
     def event_handler(self, event):

@@ -97,7 +97,6 @@ class PiInfoScreen():
             h_align = 'left',
             v_align = 'center',
             screen=accn_surface)
-        # self.accn_box.margin['bottom'] = 1
 
         self.screen_objects = [
             self.accn_box,
@@ -252,7 +251,7 @@ class PiInfoScreen():
             print "full refresh"
             self.screen.fill(COLORS['CLOUD'])
             for thing in self.screen_objects:
-                # thing.update()
+                # thing._update()
                 _screen = thing.get_screen()
                 if _screen:
                     self.screen.blit(_screen, thing.rect)

@@ -94,9 +94,6 @@ class myScreen(PiInfoScreen):
         self.li_row_font = os.path.join("resources/fonts", li_row_font)
         self.update_indicator()
 
-        for thing in self.screen_objects:
-            thing.update()
-
     def update_indicator(self):
         li_items = []
         item = {
@@ -160,7 +157,7 @@ class myScreen(PiInfoScreen):
     def store(self, accn):
         RACK_DB.file_accn(accn)
         self.accn_box.update_string("Prev: " + accn)
-        self.accn_box.update()
+        # self.accn_box.update()
         self.update_indicator()
 
     def update_locations(self):
@@ -171,8 +168,6 @@ class myScreen(PiInfoScreen):
         self.dirty = True
 
     def showScreen(self):
-        # self.update_indicator()
-        # self.location_indicator.update()
 
         file_string = gui_objects.format_location(RACK_DB.next)
         self.info2.update_string(file_string)
