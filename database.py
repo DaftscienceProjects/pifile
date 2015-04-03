@@ -44,7 +44,7 @@ class tiny_db():
 
     # @profile
     def _db_info(self):
-        if len(self.mem_db) > 0:
+        if len(self.mem_db) > 3:
             x = PrettyTable([" ", "size"])
             x.add_row(["DB Size", len(self.dict_db)])
             x = PrettyTable(["stats", "accn", "Date", "Timestamp"])

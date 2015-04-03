@@ -53,7 +53,7 @@ class PiInfoScreen():
             self.supported = True
         self.dirty = True
         pygame.init()
-        self.screen = pygame.display.set_mode(self.screensize)
+        self.screen = pygame.display.set_mode(self.screensize).copy()
         self.surfacesize = self.supportedsizes[0]
 
         title_rect = pygame.Rect(0, 25, 320, 70)
@@ -251,7 +251,6 @@ class PiInfoScreen():
             print "full refresh"
             self.screen.fill(COLORS['CLOUD'])
             for thing in self.screen_objects:
-                # thing._update()
                 _screen = thing.get_screen()
                 if _screen:
                     self.screen.blit(_screen, thing.rect)
@@ -261,7 +260,6 @@ class PiInfoScreen():
                     _screen = thing.get_screen()
                     if _screen:
                         self.screen.blit(thing.get_screen(), thing.rect)
-                    # thing.dirty = False
         self.dirty = False
 
 

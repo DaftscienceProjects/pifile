@@ -164,7 +164,6 @@ class myScreen(PiInfoScreen):
         pass
 
     def exit_function(self):
-        self.screen.fill(COLORS['CLOUD'])
         self.dirty = True
 
     def showScreen(self):
