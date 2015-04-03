@@ -123,7 +123,7 @@ class myScreen(PiInfoScreen):
                 formated = []
                 for item in reversed_list:
                     formated.append(gui_objects.format_location(item))
-                self.result_text.change_font(FONTS['mono'], self.color)
+                self.result_text.change_font(FONTS['mono_bold'], self.color)
                 self.result_text.update_string("\n".join(formated))
         return evt_used
 
