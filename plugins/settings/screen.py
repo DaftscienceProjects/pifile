@@ -24,8 +24,8 @@ class myScreen(PiInfoScreen):
 
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
-        self.vkey_surface = pygame.display.get_surface()
-        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
+        # self.vkey_surface = pygame.display.get_surface()
+        # self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
 
         self.dirty = True
 

@@ -5,11 +5,8 @@ from global_variables import SWIPE
 mouseDownTime = 0
 mouseDownPos = (0, 0)
 mouseUpPos = (0, 0)
-# Mouse related variables
-minSwipe = 25
-maxClick = 10
-longPressTime = 200
 
+minSwipe = 25
 
 class swipe():
 	def __init__(self):
@@ -24,13 +21,14 @@ class swipe():
 		self.last_swipe = None
 
 	def set_down(self):
+		print "pressed"
 		self.down_pos = pygame.mouse.get_pos()
 		self.last_pos = pygame.mouse.get_pos()
 		self.last_swipe = None
-		# self.down_time = pygame.mouse.get_pos()
 		self.is_down = True
 
 	def release(self):
+		print "Released"
 		self.up_pos = pygame.mouse.get_pos()
 		self.last_pos = None
 		self.is_down = False
@@ -45,6 +43,7 @@ class swipe():
 		y = y_new - y_down
 		self.x_delta = x
 		self.y_delta = y
+		print y
 
 	def event_handler(self, event):
 		if (event.type == pygame.MOUSEBUTTONDOWN):
@@ -52,8 +51,7 @@ class swipe():
 			return False
 		if (event.type == pygame.MOUSEBUTTONUP):
 			self.release()
-			self.swipe()
-			return True
+			return self.swipe()
 		if self.is_down:
 			self.delta()
 		return False
@@ -78,4 +76,4 @@ class swipe():
 		        swipe = 'right'
 		pygame.event.post(pygame.event.Event(SWIPE, value=swipe))
 		self.last_swipe = swipe
-		return True
+		return swipe

@@ -10,7 +10,7 @@ from multi_font_text import multi_font
 from global_variables import COLORS, SWIPE, ROWS, piscreenevents
 from global_variables import FONTS, ICONS, DATABASE_SETTINGS
 from displayscreen import PiInfoScreen
-from keyboard import VirtualKeyboard
+
 from database import RACK_DB
 sys.dont_write_bytecode = True
 
@@ -29,8 +29,8 @@ class myScreen(PiInfoScreen):
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
 
-        self.vkey_surface = pygame.display.get_surface()
-        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
+        # self.vkey_surface = pygame.display.get_surface()
+        # self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
 
         self.screen.fill(COLORS['CLOUD'])
         self.hint_text.update_string("scan to store\nswipe up for keyboard")

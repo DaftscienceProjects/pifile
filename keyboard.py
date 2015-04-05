@@ -1,7 +1,8 @@
 import pygame
 import time
 import os
-from global_variables import COLORS, ICONS, ICON_FONT_FILE, FONTS
+from swipe import swipe
+from global_variables import COLORS, ICONS, ICON_FONT_FILE, FONTS, FPS
 from pygame.locals import *
 from sunquest import *
 
@@ -9,8 +10,9 @@ from string import maketrans
 Uppercase = maketrans("7894561230",
                       'SMTWHF X  ')
 
+clock = pygame.time.Clock()
 DEBUG = False
-
+swype = swipe()
 class VirtualKeyboard():
 
     ''' Implement a basic full screen virtual keyboard for touchscreens '''
@@ -49,9 +51,11 @@ class VirtualKeyboard():
         # self.paintkeys()  # paint all the keys
 
         self.validate = validate
+        self.run(init=True)
+        self.screen_copy = self.screen.copy()
         # pygame.display.update()
 
-    def run(self, text=''):
+    def run(self, text='', init=False):
         self.screen.fill(COLORS['CLOUD'])
         self.text = text
         # create an input text box
@@ -68,56 +72,56 @@ class VirtualKeyboard():
         self.togglecaps()
         self.paintkeys()
 
+        if init:
+            return
+
         counter = 0
         # main event loop (hog all processes since we're on top, but someone might want
         # to rewrite this to be more event based...
         while True:
             time.sleep(0.1)  # 10/second is often enough
             events = pygame.event.get()
-            if events is not None:
-                for e in events:
-                    if (e.type == MOUSEBUTTONDOWN):
-                        self.selectatmouse()
-                    if (e.type == MOUSEBUTTONUP):
-                        if self.clickatmouse():
-                            # user clicked enter or escape if returns True
-                            if self.input.text == '':
-                                self.clear()
-                                # Return what the user entered
+            for e in events:
+                if swype.event_handler(e) == 'down':
+                    print "swipe detected"
+                    return self.input.text
+                if (e.type == MOUSEBUTTONDOWN):
+                    self.selectatmouse()
+                if (e.type == MOUSEBUTTONUP):
+                    if self.clickatmouse():
+                        # user clicked enter or escape if returns True
+                        if self.input.text == '':
+                            return self.input.text
+                        else:
+                            if DEBUG:
                                 return self.input.text
                             else:
-                                if DEBUG:
+                                if self.validate == False:
                                     return self.input.text
                                 else:
-                                    if self.validate == False:
-                                        return self.input.text
+                                    if sunquest_fix(self.input.text) != None:
+                                        # self.clear()
+                                        return sunquest_fix(self.input.text)
                                     else:
-                                        if sunquest_fix(self.input.text) != None:
-                                            self.clear()
-                                            return sunquest_fix(self.input.text)
-                                        else:
-                                            self.paintkeys()
-                                            temp = self.input.text
-                                            self.input.text = 'invalid'
-                                            self.input.cursorvis = False
-                                            self.input.draw()
-                                            time.sleep(1)
-                                            self.input.text = temp
-                                            self.input.draw()
-                                    # print "invalid"
-                                    # self.clear()
-                    if (e.type == MOUSEMOTION):
-                        if e.buttons[0] == 1:
-                            # user click-dragged to a different key?
-                            self.selectatmouse()
-
+                                        self.paintkeys()
+                                        temp = self.input.text
+                                        self.input.text = 'invalid'
+                                        self.input.cursorvis = False
+                                        self.input.draw()
+                                        time.sleep(1)
+                                        self.input.text = temp
+                                        self.input.draw()
+                if (e.type == MOUSEMOTION):
+                    if e.buttons[0] == 1:
+                        # user click-dragged to a different key?
+                        self.selectatmouse()
             counter += 1
-            # print self.input.cursorvis
             if counter > 10:
                 self.input.flashcursor()
                 counter = 0
-
+            pygame.display.update()
     def invalid_entry(self):
+        pass
         self.clear()
 
 
@@ -134,8 +138,8 @@ class VirtualKeyboard():
         # self.screen.blit(self.screenCopy, (0,0))
         self.unselectall()
         for key in self.keys:
-            keyrect = Rect(key.x, key.y, key.w, key.h)
-            if keyrect.collidepoint(pygame.mouse.get_pos()):
+            # keyrect = Rect(key.x, key.y, key.w, key.h)
+            if key.rect.collidepoint(pygame.mouse.get_pos()):
                 key.dirty = True
                 if key.bskey:
                     self.input.backspace()
@@ -191,14 +195,14 @@ class VirtualKeyboard():
         if self.input.rect.collidepoint(pos):
             self.input.setcursor(pos)
         else:
-            for key in self.keys:
-                keyrect = Rect(key.x, key.y, key.w, key.h)
-                if keyrect.collidepoint(pos):
-                    key.selected = True
-                    key.dirty = True
-                    self.paintkeys()
-                    return
-
+            x = abs(swype.x_delta)
+            y = abs(swype.y_delta)
+            if x < 20 and y < 20:
+                for key in self.keys:
+                    if key.rect.collidepoint(pos):
+                        key.selected = True
+                        key.dirty = True
+                        break
         self.paintkeys()
 
     def addkeys(self):  # Add all the keys for the virtual keyboard
@@ -312,19 +316,10 @@ class VirtualKeyboard():
 
     def paintkeys(self):
         ''' Draw the keyboard (but only if they're dirty.) '''
-
         for key in self.keys:
             # pass
             key.update(self.caps)
         self.all_keys.draw(self.screen)
-        pygame.display.update()
-
-    def clear(self):
-        pass
-        ''' Put the screen back to before we started '''
-        # self.screen.blit(self.background, (0, 0))
-        # pygame.display.get_surface().flip()
-        # pygame.display.update()
 
 # ----------------------------------------------------------------------------
 
@@ -379,6 +374,7 @@ class TextInput():
         self.cursorY = int(len(text) / self.lineChars)  # line 1
 
         self.draw()
+        
 
     def draw(self):
         ''' Draw the text input box '''
@@ -389,8 +385,6 @@ class TextInput():
 
         self.drawcursor()
         self.surface.blit(self.layer, self.rect)
-
-        pygame.display.update()
 
     def flashcursor(self):
         ''' Toggle visibility of the cursor '''
@@ -405,9 +399,6 @@ class TextInput():
 
     def addcharatcursor(self, letter):
         ''' Add a character whereever the cursor is currently located '''
-        # print self.cursorpos
-        # print len(self.text)
-        # print self.max_length
         if self.cursorpos < len(self.text) and len(self.text) < self.max_length:
             # print 'Inserting in the middle'
             self.text = self.text[:self.cursorpos] + letter + self.text[self.cursorpos:]
@@ -462,7 +453,6 @@ class TextInput():
         else:
             self.cursorlayer.fill(self.background_color)
         self.layer.blit(self.cursorlayer, (x, y))
-        pygame.display.update()
 
     def setcursor(self, pos):  # move cursor to char nearest position (x,y)
         line = 0

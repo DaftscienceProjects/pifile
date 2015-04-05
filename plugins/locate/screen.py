@@ -7,7 +7,7 @@ from eztext import Input
 from pygame.locals import K_RETURN, KEYDOWN
 from global_variables import COLORS, ICONS, SCREEN_TIMEOUT, FONTS
 from displayscreen import PiInfoScreen
-from keyboard import VirtualKeyboard
+
 from database import RACK_DB
 sys.dont_write_bytecode = True
 
@@ -26,14 +26,16 @@ class myScreen(PiInfoScreen):
     def __init__(self, *args, **kwargs):
         PiInfoScreen.__init__(self, args[0], kwargs)
 
-        self.vkey_surface = pygame.display.get_surface()
-        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
+        # self.vkey_surface = pygame.display.get_surface()
+        # self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
 
         self.timer = False
         self.timeout = 0
-        self.timeout_delay =  SCREEN_TIMEOUT * 60 # in seconds
+        self.timeout_delay =  3 # in seconds
+        # self.timeout_delay =  SCREEN_TIMEOUT * 60 # in seconds
         self.new_result = False
         self.dirty = True
+        self.timer_active = False
 
         self.default_message = "scan to locate\nswipe up for keyboard"
 
@@ -63,6 +65,7 @@ class myScreen(PiInfoScreen):
         self.result_text.margin['top'] = 3
         self.screen_objects.append(self.result_text)
 
+        self.result_text.update_string(self.default_message)
 
         # # BOTTOM INFO BAR
         info1_rect = pygame.Rect(5, 205, 310, 25)
@@ -98,6 +101,7 @@ class myScreen(PiInfoScreen):
                 return False
             self.accn_box.update_string("Accn#: " + str(accn))
             self.timeout = time() + self.timeout_delay
+            self.timer_active = True
             result = RACK_DB.find_accn(accn)
             if not result:
                 magoo = "Ohh Magoo, you've done it again!"
@@ -131,11 +135,13 @@ class myScreen(PiInfoScreen):
     def showScreen(self):
         tmstmp = strftime("%H:%M", localtime(time()))
         self.clock.update_string(tmstmp)
-        if self.timeout < time():
-            self.result_text.change_font(FONTS['swipe_font'], self.color)
-            self.result_text.update_string('')
-            self.accn_box.update_string('')
-            self.info1.update_string('')
-            self.result_text.update_string(self.default_message)
+        if self.timer_active:
+            if self.timeout < time():
+                self.timer_active = False
+                self.result_text.change_font(FONTS['swipe_font'], self.color)
+                self.result_text.update_string('')
+                self.accn_box.update_string('')
+                self.info1.update_string('')
+                self.result_text.update_string(self.default_message)
         self.refresh_objects()
         return self.screen

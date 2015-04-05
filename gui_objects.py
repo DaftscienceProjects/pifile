@@ -114,7 +114,7 @@ class render_textrect():
         return self.screen
 
     def _update(self):
-        print "Updatating Thing"
+        # print "Updatating Thing " + self.string
         self.fontsize = self.MaxFont
         if not self.shrink:
             # print "not shrunk"
@@ -259,12 +259,12 @@ class textrect_image(render_textrect):
     def toggle_screen(self):
         self.dirty = True
         self.show_img = not self.show_img
-        print "Toggled screens"
+        # print "Toggled screens"
 
     def get_screen(self):
         self.dirty = False
         if self.show_img:
-            print "returning image"
+            # print "returning image"
             return self.img
         else:
             return self.screen

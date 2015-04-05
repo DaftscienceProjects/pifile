@@ -5,6 +5,7 @@ import time
 # import urllib2
 import gui_objects
 import eztext
+from keyboard import VirtualKeyboard
 from configobj import ConfigObj
 from validate import Validator
 from global_variables import COLORS, FONTS, PLUGIN_VALIDATOR, piscreenevents
@@ -55,6 +56,10 @@ class PiInfoScreen():
         pygame.init()
         self.screen = pygame.display.set_mode(self.screensize).copy()
         self.surfacesize = self.supportedsizes[0]
+
+        self.vkey_surface = pygame.display.get_surface()
+        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
+        self.vkey_screen = self.vkey.screen_copy
 
         title_rect = pygame.Rect(0, 25, 320, 70)
         title_surface = pygame.Surface(title_rect.size)
