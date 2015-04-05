@@ -29,11 +29,11 @@ class tiny_db():
         self._today()
         self.next_location()
         self._db_info()
-        if self.last_filed is None:
-            try:
-                self._convert_to_sqlitedb()
-            except:
-                print "Database is Empty"
+        # if self.last_filed is None:
+            # try:
+                # self._convert_to_sqlitedb()
+            # except:
+                # print "Database is Empty"
 
 
     # @profile
@@ -48,7 +48,6 @@ class tiny_db():
             x = PrettyTable([" ", "size"])
             x.add_row(["DB Size", len(self.dict_db)])
             x = PrettyTable(["stats", "accn", "Date", "Timestamp"])
-            # pprint(self.last_filed)
             readable = self._conv_timestamp(self.last_filed['time'])
             x.add_row(["Last",
                        self.last_filed['accn'],
@@ -70,10 +69,8 @@ class tiny_db():
         if len(self.mem_db) < 2:
             return none
         x = PrettyTable(["Accn", "Rack", "Position", "Time", "Timestamp"])
-        # x.padding_width = 1
         for item in self.mem_db:
             x.add_row(self._make_entry_row(item))
-        # print x.get_string(sortby="Timestamp")
         f = open('_database_info.txt', 'w')
         f.write(x.get_string(sortby="Timestamp"))
         f.write(self._db_info().get_string())
@@ -82,7 +79,6 @@ class tiny_db():
 
     def _make_entry_row(self, item):
         readable = self._conv_timestamp(item['time'])
-        # print item['row']
         x = [item['accn'],
              item['rackDay'] + ' ' + str(item['rack']),
              ROWS[str(item['row'])] + ' ' + str(item['column']),
@@ -185,30 +181,30 @@ class tiny_db():
                 result.append(item)
         return result
 
-    # @profile
-    def _convert_to_sqlitedb(self):
-        old_db = TinyDB(DATABASE_SETTINGS['database'])
-        self.mem_db = []
-        total = 0
-        for table in old_db.tables():
-            for item in old_db.table(table).all():
-                total += 1
-        print "MIGRATING DATABASE"
-        print "--OLD DATABASE: " + str(total)
-        i = 0
-        for table in old_db.tables():
-            for item in old_db.table(table).all():
-                if len(item['accn']) < 15:
-                    if int(item['time']) > self.purge_date:
-                        self.mem_db.append(item)
-                        print "   Converted:   " + str(i) + " of " + str(total)
-                        i += 1
-                        self.dict_db[str(item['time'])] = item
-                    else:
-                        print "REMOVING OLD THING"
-        print "DATABASE MIGRATION COMPLETE"
-        print "COMMITING CHANGES"
-        self.get_last_filed()
+    # # @profile
+    # def _convert_to_sqlitedb(self):
+    #     old_db = TinyDB(DATABASE_SETTINGS['database'])
+    #     self.mem_db = []
+    #     total = 0
+    #     for table in old_db.tables():
+    #         for item in old_db.table(table).all():
+    #             total += 1
+    #     print "MIGRATING DATABASE"
+    #     print "--OLD DATABASE: " + str(total)
+    #     i = 0
+    #     for table in old_db.tables():
+    #         for item in old_db.table(table).all():
+    #             if len(item['accn']) < 15:
+    #                 if int(item['time']) > self.purge_date:
+    #                     self.mem_db.append(item)
+    #                     print "   Converted:   " + str(i) + " of " + str(total)
+    #                     i += 1
+    #                     self.dict_db[str(item['time'])] = item
+    #                 else:
+    #                     print "REMOVING OLD THING"
+    #     print "DATABASE MIGRATION COMPLETE"
+    #     print "COMMITING CHANGES"
+    #     self.get_last_filed()
 
     # @profile
     def clean(self):
@@ -216,9 +212,17 @@ class tiny_db():
         print "Mem:  " +str(len(self.mem_db))
         self.mem_db = []
         for item in self.dict_db.iteritems():
-            if item[1]['time'] < self.purge_date:
+            # print int(item[1]['time'][:-3])
+            # print self.purge_date
+            if float(item[1]['time']) < self.purge_date:
+                print "---"
+                print float(item[1]['time'])
+                # print "---"
+                print self.purge_date
                 del self.dict_db[item[0]]
+
         self._define_mem_db()
+        print self.purge_date
         print "HARD STORAGE: " + str(len(self.dict_db))
         print "Mem:  " +str(len(self.mem_db))
 
@@ -263,4 +267,9 @@ if __name__ == '__main__':
     RACK_DB._db_info()
     print_prof_data()
     RACK_DB.clean()
-    pprint(RACK_DB.mem_db)
+    print int(
+            mktime(
+                (datetime.date.today() -
+                 datetime.timedelta(
+                    RACK_DB.days_to_keep)).timetuple()))
+    # pprint(RACK_DB.mem_db)

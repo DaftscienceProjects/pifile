@@ -28,7 +28,7 @@ class myScreen(PiInfoScreen):
         # self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
 
         self.dirty = True
-
+        self.vkey.validate = False
         self.default_message = "Please use caution\nEnter: 'F1' to optimize database"
 
         self.screen.fill(COLORS['CLOUD'])

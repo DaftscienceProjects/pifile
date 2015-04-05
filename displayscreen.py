@@ -58,7 +58,7 @@ class PiInfoScreen():
         self.surfacesize = self.supportedsizes[0]
 
         self.vkey_surface = pygame.display.get_surface()
-        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name, False)
+        self.vkey = VirtualKeyboard(self.vkey_surface, self.color_name)
         self.vkey_screen = self.vkey.screen_copy
 
         title_rect = pygame.Rect(0, 25, 320, 70)

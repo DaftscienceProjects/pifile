@@ -10,6 +10,13 @@ from string import maketrans
 Uppercase = maketrans("7894561230",
                       'SMTWHF X  ')
 
+special_keys = [
+        'keyboard-return',
+        'keyboard-backspace',
+        'keyboard-close',
+        'eraser',
+        'alphabetical']
+
 clock = pygame.time.Clock()
 DEBUG = False
 swype = swipe()
@@ -21,19 +28,22 @@ class VirtualKeyboard():
 
         # SCREEN SETTINGS
         self.screen = screen
-        self.rect = self.screen.get_rect()
-        self.w = self.rect.width
-        self.h = self.rect.height
-        # create a background surface
-        self.background = pygame.Surface(self.rect.size)
         self.screen.fill(COLORS['CLOUD'])
 
-        # KEY SETTINGS
-        self.keyW = int((self.w) / 4)  # key width with border
-        self.keyH = int((self.h) / 5)  # key height
-        self.x = (self.w - self.keyW * 4) / 2  # centered
-        self.y = 0  # stay away from the edges (better touch)
-        # pygame.font.init()  # Just in case
+        self.rect = self.screen.get_rect()
+        w,h = self.rect.size
+
+
+        self.keyW = int((w) / 4)
+        self.keyH = int((h) / 5)
+        self.x = (w - self.keyW * 4) / 2
+        self.y = 0
+
+        kw = int((w) / 4)
+        kh = int((h) / 5)
+        kx = (w - self.keyW * 4) / 2
+        ky = 0
+        self.key_rect = pygame.Rect(kx, ky, kw, kh)
 
         self.keyFont = FONTS['key_font']['font']
 
@@ -41,50 +51,75 @@ class VirtualKeyboard():
             ICONS.font_location, int(
                 self.keyH * 0.70))  # keyboard font
 
-        self.textW = self.w  # + 4  # leave room for escape key
+        self.textW = w  # + 4  # leave room for escape key
         self.textH = self.keyH
         self.color = COLORS[color]
 
         self.caps = False
         self.keys = []
         self.addkeys()  # add all the keys
-        # self.paintkeys()  # paint all the keys
-
-        self.validate = validate
-        self.run(init=True)
-        self.screen_copy = self.screen.copy()
-        # pygame.display.update()
-
-    def run(self, text='', init=False):
-        self.screen.fill(COLORS['CLOUD'])
-        self.text = text
-        # create an input text box
-        # create a text input box with room for 2 lines of text. leave room for
-        # the escape key
+        
         self.input = TextInput(
             self.screen,
-            self.text,
+            '',
             self.x,
             self.y,
             self.textW,
             self.textH)
+
+        self.validate = validate
+        self.run(init=True)
+        self.screen_copy = self.screen.copy()
+        self.special_keys = {
+            'keyboard-return': self.keyboard_return,
+            'keyboard-backspace': self.keyboard_backspace,
+            'keyboard-close': self.keyboard_close,
+            'eraser': self.keyboard_backspace,
+            'alphabetical': self.togglecaps
+        }
+
+    def keyboard_return(self):
+        return True
+
+    def keyboard_close(self):
+        self.eraser()
+        return True
+
+    def keyboard_backspace(self):
+        self.input.backspace()
+        if len(self.input.text) == 0:
+            self.togglecaps(force=True)
+        self.paintkeys()
+        return False
+
+    def eraser(self):
+        while self.input.cursorpos > 0:
+            self.input.backspace()
+        return False
+
+    def run(self, text='', init=False):
+        self.screen.fill(COLORS['CLOUD'])
+        self.text = text
         self.caps = False
         self.togglecaps()
         self.paintkeys()
 
         if init:
             return
-
         counter = 0
         # main event loop (hog all processes since we're on top, but someone might want
         # to rewrite this to be more event based...
         while True:
             time.sleep(0.1)  # 10/second is often enough
             events = pygame.event.get()
+
+            if len(self.input.text) == 1 and self.caps:
+                self.togglecaps(force=False)
+
             for e in events:
                 if swype.event_handler(e) == 'down':
-                    print "swipe detected"
-                    return self.input.text
+                    self.input.text = ''
+                    return ''
                 if (e.type == MOUSEBUTTONDOWN):
                     self.selectatmouse()
                 if (e.type == MOUSEBUTTONUP):
@@ -92,25 +127,24 @@ class VirtualKeyboard():
                         # user clicked enter or escape if returns True
                         if self.input.text == '':
                             return self.input.text
+                        if self.validate == False:
+                            return self.input.text
+                        if sunquest_fix(self.input.text) == None:
+                            self.paintkeys()
+                            temp = self.input.text
+                            self.input.text = 'invalid'
+                            self.input.cursorvis = False
+                            self.input.draw()
+                            pygame.display.update()
+                            time.sleep(1)
+                            self.input.text = temp
+                            self.input.draw()
+                            pygame.display.update()
                         else:
-                            if DEBUG:
-                                return self.input.text
-                            else:
-                                if self.validate == False:
-                                    return self.input.text
-                                else:
-                                    if sunquest_fix(self.input.text) != None:
-                                        # self.clear()
-                                        return sunquest_fix(self.input.text)
-                                    else:
-                                        self.paintkeys()
-                                        temp = self.input.text
-                                        self.input.text = 'invalid'
-                                        self.input.cursorvis = False
-                                        self.input.draw()
-                                        time.sleep(1)
-                                        self.input.text = temp
-                                        self.input.draw()
+                            text = sunquest_fix(self.input.text)
+                            self.input.text = ''
+                            return text
+
                 if (e.type == MOUSEMOTION):
                     if e.buttons[0] == 1:
                         # user click-dragged to a different key?
@@ -126,68 +160,40 @@ class VirtualKeyboard():
 
 
     def unselectall(self, force=False):
-        ''' Force all the keys to be unselected
-            Marks any that change as dirty to redraw '''
         for key in self.keys:
             if key.selected:
                 key.selected = False
                 key.dirty = True
+
 
     def clickatmouse(self):
         # ''' Check to see if the user is pressing down on a key and draw it selected '''
         # self.screen.blit(self.screenCopy, (0,0))
         self.unselectall()
         for key in self.keys:
-            # keyrect = Rect(key.x, key.y, key.w, key.h)
             if key.rect.collidepoint(pygame.mouse.get_pos()):
                 key.dirty = True
-                if key.bskey:
-                    self.input.backspace()
-                    self.paintkeys()
-                    return False
-                if key.fskey:
-                    self.input.inccursor()
-                    self.paintkeys()
-                    return False
-                if key.spacekey:
-                    self.input.addcharatcursor(' ')
-                    self.paintkeys()
-                    return False
-                if key.clear:
-                    while self.input.cursorpos > 0:
-                        self.input.backspace()
-                    self.paintkeys()
-                    return False
-                if key.shiftkey:
-                    self.togglecaps()
-                    self.paintkeys()
-                    return False
-                if key.escape:
-                    self.input.text = ''  # clear input
-                    return True
-                if key.enter:
-                    return True
-                if self.caps:
-                    keycap = key.caption.translate(Uppercase)
+                if key.special:
+                    result = self.special_keys[key.special]()
+                    return result
+                elif self.caps:
+                    self.input.addcharatcursor(key.caption.translate(Uppercase))
                 else:
-                    keycap = key.caption
-                self.input.addcharatcursor(keycap)
-                if self.caps:
-                    self.togglecaps()
-                self.paintkeys()
-                return False
-
+                    self.input.addcharatcursor(key.caption)
         self.paintkeys()
         return False
 
-    def togglecaps(self):
-        ''' Toggle uppercase / lowercase '''
-        if self.caps:
-            self.caps = False
+    def togglecaps(self, force='toggle'):
+        print "toggle caps"
+        if force == 'toggle':
+            self.caps = not self.caps
         else:
-            self.caps = True
+            self.caps = force
+        
         for key in self.keys:
             key.dirty = True
+        self.paintkeys()
+        return False
 
     def selectatmouse(self):
         self.unselectall()
@@ -195,9 +201,8 @@ class VirtualKeyboard():
         if self.input.rect.collidepoint(pos):
             self.input.setcursor(pos)
         else:
-            x = abs(swype.x_delta)
-            y = abs(swype.y_delta)
-            if x < 20 and y < 20:
+            x,y = swype.delta
+            if abs(x) < 20 and abs(y) < 20:
                 for key in self.keys:
                     if key.rect.collidepoint(pos):
                         key.selected = True
@@ -207,109 +212,50 @@ class VirtualKeyboard():
 
     def addkeys(self):  # Add all the keys for the virtual keyboard
 
-        x = self.x + 1
-        y = self.y + self.textH  # + self.keyH / 4
-
-        row = ['7', '8', '9']
-        for item in row:
-            onekey = VKey(
-                item,
-                x,
-                y,
-                self.keyW,
-                self.keyH,
-                self.keyFont, self.color)
-            self.keys.append(onekey)
-            x += self.keyW
-        onekey = VKey('keyboard-backspace',
-                      x,
-                      y,
-                      self.keyW - 1,
-                      self.keyH,
-                      self.fa, self.color, special=True)
+        self.key_rect.left = 1
+        self.key_rect.top += self.textH
+        for item in range(7, 10):
+            key = VKey(str(item), self.key_rect.copy(), self.keyFont, self.color)
+            self.keys.append(key)
+            self.key_rect.left += self.key_rect.width + 1
+        onekey = VKey('keyboard-backspace',self.key_rect.copy(),self.fa, self.color)
         onekey.bskey = True
         self.keys.append(onekey)
-        x += onekey.w + self.keyW / 3
 
-        y += self.keyH  # overlap border
-        x = self.x + 1
+        self.key_rect.top = self.key_rect.bottom + 1
+        self.key_rect.left = 1
 
-        row = ['4', '5', '6']
-        for item in row:
-            onekey = VKey(
-                item,
-                x,
-                y,
-                self.keyW,
-                self.keyH,
-                self.keyFont, self.color)
-            self.keys.append(onekey)
-            x += self.keyW
-        x += self.x
-        onekey = VKey('alphabetical',
-                      x,
-                      y,
-                      self.keyW - 1,
-                      self.keyH,
-                      self.fa, self.color, special=True, shiftkey=True)
+        for item in range(4, 7):
+            key = VKey(str(item), self.key_rect.copy(), self.keyFont, self.color)
+            self.keys.append(key)
+            self.key_rect.left = self.key_rect.right + 1
+
+        onekey = VKey('alphabetical',self.key_rect.copy(),self.fa, self.color)
         self.keys.append(onekey)
 
-        y += self.keyH
-        x = self.x + 1
+        self.key_rect.left = 1
+        self.key_rect.top = self.key_rect.bottom + 1
 
-        row = ['1', '2', '3']
-        for item in row:
-            onekey = VKey(
-                item,
-                x,
-                y,
-                self.keyW,
-                self.keyH,
-                self.keyFont, self.color)
-            self.keys.append(onekey)
-            x += self.keyW
+        for item in range(1, 4):
+            key = VKey(str(item), self.key_rect.copy(), self.keyFont, self.color)
+            self.keys.append(key)
+            self.key_rect.left = self.key_rect.right + 1
 
-        onekey = VKey(
-            'keyboard-return',
-            x,
-            y,
-            self.keyW - 1,
-            self.keyH * 2,
-            self.fa, self.color, special=True)
-        onekey.enter = True
+        onekey = VKey('keyboard-return',self.key_rect.copy(),self.fa, self.color)
         self.keys.append(onekey)
 
-        y += self.keyH
-        x = self.x + 1
-
-        onekey = VKey('keyboard-close',
-                      x,
-                      y,
-                      int(self.keyW),
-                      self.keyH,
-                      self.fa, self.color, special=True)
-        onekey.escape = True
+        self.key_rect.left = 1
+        self.key_rect.top = self.key_rect.bottom + 1        
+        onekey = VKey('keyboard-close',self.key_rect.copy(),self.fa, self.color)        
         self.keys.append(onekey)
-        x += self.keyW
 
-        onekey = VKey('0',
-                      x,
-                      y,
-                      int(self.keyW),
-                      self.keyH,
-                      self.keyFont, self.color)
-        self.keys.append(onekey)
-        x += self.keyW
+        self.key_rect.left = self.key_rect.right + 1
+        key = VKey('0', self.key_rect.copy(), self.keyFont, self.color)
+        self.keys.append(key)
+        self.key_rect.left = self.key_rect.right + 1
 
-        onekey = VKey('eraser',
-                      x,
-                      y,
-                      int(self.keyW),
-                      self.keyH,
-                      self.fa, self.color, special=True)
-        onekey.clear = True
-        self.keys.append(onekey)
-        x += self.keyW
+        key = VKey('eraser', self.key_rect.copy(), self.keyFont, self.color)
+        self.keys.append(key)
 
         self.all_keys = pygame.sprite.Group()
         self.all_keys.add(self.all_keys, self.keys)
@@ -320,9 +266,6 @@ class VirtualKeyboard():
             # pass
             key.update(self.caps)
         self.all_keys.draw(self.screen)
-
-# ----------------------------------------------------------------------------
-
 
 class TextInput():
 
@@ -440,8 +383,6 @@ class TextInput():
             line = 1
         x = 4
         y = 4
-        # print y
-        # Calc width of text to this point
         if self.cursorpos > 0:
             linetext = self.text[line * self.lineChars:self.cursorpos]
             rtext = self.txtFont.render(linetext, 1, self.font_color)
@@ -471,9 +412,6 @@ class TextInput():
         self.cursorpos = p
         self.draw()
 
-# ----------------------------------------------------------------------------
-
-
 class VKey(pygame.sprite.Sprite):
 
     ''' A single key for the VirtualKeyboard '''
@@ -481,74 +419,58 @@ class VKey(pygame.sprite.Sprite):
     def __init__(
             self,
             caption,
-            x,
-            y,
-            w,
-            h,
+            rect,
             font,
-            color,
-            special=False,
-            shiftkey=False):
+            color):
         pygame.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
-
-        self.w = w  # + 1  # overlap borders
-        self.h = h  # + 1  # overlap borders
-        self.special = special
-        self.enter = False
-        self.bskey = False
-        self.fskey = False
-        self.clear = False
-        self.spacekey = False
-        self.escape = False
-        self.shiftkey = shiftkey
-        self.font = font
+        self.special = None
         self.selected = False
         self.dirty = True
-        self.image = pygame.Surface((w - 1, h - 1))
-        self.rect = Rect(self.x, self.y, w, h)
 
-        self.color = color['500']
-        self.selected_color = color['100']
-        self.font_color = COLORS['CLOUD']
+        if caption in special_keys:
+            self.special = caption
 
-        if special:
-            self.caption = ICONS.unicode(caption)
-            if shiftkey:
-                self.shifted_caption = ICONS.unicode('numeric')
         else:
             self.caption = caption
-            self.shifted_caption = self.caption.translate(Uppercase)
-
-        if not special or self.shiftkey:
-            self.shifted_text = self.font.render(
-                self.shifted_caption,
-                1,
-                self.font_color)
-        self.text = self.font.render(self.caption, 1, self.font_color)
+        if caption == 'keyboard-return':
+            top = rect.top
+            rect.height *= 2
+            rect.top = top
+        self.rect = rect
+        self.image = pygame.Surface(self.rect.size)
+        
+        self.selected_color = color['100']
+        self.color = color['500']
+        font_color = COLORS['CLOUD']
+        if self.special:
+            if caption == 'alphabetical':
+                shifted_text = ICONS.unicode('numeric')
+            else:
+                shifted_text = ICONS.unicode(caption)
+            caption = ICONS.unicode(caption)
+        else:
+            shifted_text = caption.translate(Uppercase)
+        self.text = font.render(caption, 1, font_color)
+        self.shifted_text = font.render(shifted_text, 1,font_color)
 
     def update(self, shifted=False, forcedraw=False):
         '''  Draw one key if it needs redrawing '''
         if not forcedraw:
             if not self.dirty:
                 return
-
-        text = self.text
-        if not self.special or self.shiftkey:
-            if shifted:
-                text = self.shifted_text
-
+        if shifted:
+            text = self.shifted_text
+        else:
+            text = self.text
+        
         if self.selected:
             color = self.selected_color
         else:
             color = self.color
-
+        
         self.image.fill(color)
         textpos = text.get_rect()
-        blockoffx = (self.w / 2)
-        blockoffy = (self.h / 2)
-        offsetx = blockoffx - (textpos.width / 2)
-        offsety = blockoffy - (textpos.height / 2)
-        self.image.blit(text, (offsetx, offsety))
+        textpos.centerx = self.rect.width / 2
+        textpos.centery = self.rect.height / 2
+        self.image.blit(text, textpos)
         self.dirty = False

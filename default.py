@@ -74,6 +74,7 @@ def log(message):
 
 def getPlugins():
     plugins = []
+    keyboards = []
     possibleplugins = os.listdir(PluginFolder)
     a = 1
     for i in possibleplugins:
@@ -83,6 +84,7 @@ def getPlugins():
             continue
         inf = imp.find_module(MainModule, [location])
         plugins.append({"name": i, "info": inf, "id": a})
+
         a = a + 1
     return plugins
 
@@ -95,24 +97,19 @@ def loadPlugin(plugin):
 
 def getScreens():
     '''Gets list of available plugin screen objects.'''
-    a = []
-    for i in getPlugins():
-        plugin = loadPlugin(i)
-        try:
-            # The plugin should have the myScreen function
-            # We send the screen size for future proofing (i.e. plugins should
-            # be able to cater for various screen resolutions
-            #
-            # TO DO: Work out whether plugin can return more than one screen!
-            loadedscreen = plugin.myScreen(size, userevents=piscreenevents)
-            a.append(loadedscreen)
-            showLoadedPlugin(loadedscreen)
+    plugins = []
+    keyboards = []
+    for plugin in getPlugins():
+        plugin = loadPlugin(plugin)
+        loadedscreen = plugin.myScreen(size, userevents=piscreenevents)
+        plugins.append(loadedscreen)
+        showLoadedPlugin(loadedscreen)
 
-        except:
-            # If it doesn't work, ignore that plugin and move on
-            log(traceback.format_exc())
-            continue
-    return a
+    for plugin in plugins:
+        # pprint(plugin.color)
+        keyboards.append(plugin.vkey)
+    return plugins, keyboards
+
 
 loading_font = pygame.font.Font(FONTS['swipe_font']['path'], 18)
 
@@ -167,23 +164,8 @@ def showLoadedPlugin(plugin):
     message_text.text_color = plugin.color
     screen.blit(message_text.get_screen(), (0,0))
     pygame.display.flip()
-    sleep(LOADING_TIME)
+    # sleep(LOADING_TIME)
     screen.fill(COLORS['CLOUD'])
-
-
-def setNextScreen(event, screenindex):
-    if event == 'left':
-        a = 1
-    elif event =='right':
-        a = -1
-    else:
-        return screenindex
-    '''Queues the next screen.'''
-    pygame.event.post(pygame.event.Event(NEXTSCREEN))
-    pluginScreens[screenindex].exit_function()
-
-    # get_next_index(a, screenindex)
-    return get_next_index(a, screenindex)
 
 def get_next_index(direction, screenindex):
     new_index = direction + screenindex
@@ -227,7 +209,9 @@ pygame.display.set_caption("Info screen")
 # Stop keys repeating
 pygame.key.set_repeat()
 
-pluginScreens = getScreens()
+pluginScreens, keyboards = getScreens()
+
+
 
 mouseDownTime = 0
 mouseDownPos = (0, 0)
@@ -241,65 +225,100 @@ longPressTime = 200
 # Run our main loop
 swype = swipe()
 
-def mouse_down(event, screenindex):
+def mouse_down(event, index):
+    screenindex = index
     swype.event_handler(event)
     other_screen = 0
-    delta = 0
+    delta_y = 0
+    delta_x = 0
 
+    left = get_next_index(1, screenindex)
+    right = get_next_index(-1, screenindex)
+
+    left_screen = pluginScreens[left].screen
+    right_screen = pluginScreens[right].screen
+    current_screen = pluginScreens[screenindex].screen
+    keyboard_screen = pluginScreens[screenindex].vkey_screen
 
     while swype.is_down:
         for event in pygame.event.get():
             swype.event_handler(event)
-        if not swype.is_down:
-            continue
-        delta_x = swype.x_delta
-        delta_y = swype.y_delta
+        if not swype.is_down: continue
+
+        delta_x, delta_y = swype.delta
+        # delta_y = swype.y_delta
         if abs(delta_x) > abs(delta_y):
             if delta_x > 0:
-                other_screen = get_next_index(1, screenindex)
-            if delta < 0:
-                other_screen = get_next_index(-1, screenindex)
-            pluginScreens[screenindex].dirty = True
-            if delta_x > 0:
-                print "grater than 0"
-                screen.blit(pluginScreens[other_screen].screen, (-320+delta_x,0))
+                screen.blit(left_screen, (-320+delta_x,0))
             else:
-                print "less than zero"
-                screen.blit(pluginScreens[other_screen].screen, (320+delta_x,0))
-            screen.blit(pluginScreens[screenindex].screen, (delta_x, 0))
-        elif abs(delta) < abs(delta_y):
+                screen.blit(right_screen, (320+delta_x,0))
+            screen.blit(current_screen, (delta_x, 0))
+        elif abs(delta_x) < abs(delta_y):
             if delta_y < 0:
-                screen.blit(pluginScreens[screenindex].screen, (0, delta_y))
-                screen.blit(pluginScreens[screenindex].vkey_screen, (0, 240+delta_y))
+                screen.blit(current_screen, (0, delta_y))
+                screen.blit(keyboard_screen, (0, 240+delta_y))
         update_display()
 
-    print "Mouse Up?"
     if swype.last_swipe:
         print swype.last_swipe
         accel = 1.3
         if swype.last_swipe == 'left':
-            screenindex = setNextScreen(swype.last_swipe, screenindex)
+            while delta_x < 319:
+                # print delta_x
+                screen.blit(left_screen, (-320+delta_x,0))
+                screen.blit(current_screen, (delta_x, 0))
+                delta_x += 20
+                update_display()
+            screenindex = left
         if swype.last_swipe == 'right':
-            screenindex = setNextScreen(swype.last_swipe, screenindex)
-        return screenindex
-def update_display():
+            while delta_x > - 319:
+                print delta_x
+                screen.blit(right_screen, (320+delta_x,0))
+                screen.blit(current_screen, (delta_x, 0))
+                delta_x -= 20
+                update_display()
+            screenindex = right
+        if swype.last_swipe == 'up':
+            while delta_y > -239:
+                screen.blit(current_screen, (0, delta_y))
+                screen.blit(keyboard_screen, (0, 240+delta_y))
+                print delta_y
+                delta_y -= 10
+                update_display()
+            evnt = pygame.event.Event(SWIPE, value='up')
+            pluginScreens[screenindex].event_handler(evnt)
+    pygame.event.post(pygame.event.Event(NEWSCREEN, value=screenindex))
+    return True if screenindex != index else False 
+
+def update_display(fps=None):
     show_fps()
-    clock.tick(FPS)
+    if fps:
+        clock.tick(fps)
+    else:
+        clock.tick(FPS)
     pygame.display.flip()
 
 while not quit:
+    show_keyboard = False
+    new_screen = False
     for event in pygame.event.get():
-        event_used = pluginScreens[screenindex].event_handler(event)
-        if not event_used:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                quit = True
-            if event.type == pygame.QUIT:
-                quit = True
-            if event.type == piscreenevents['toggle_fps'].type:
-                SHOW_FPS = not SHOW_FPS
-            if (event.type == pygame.MOUSEBUTTONDOWN):
-                screenindex  = mouse_down(event, screenindex)
-
+        if event.type == SWIPE and event.value == 'up':
+            continue
+        if pluginScreens[screenindex].event_handler(event):
+            continue
+        if event.type == pygame.QUIT:
+            quit = True
+        if event.type == piscreenevents['toggle_fps'].type:
+            SHOW_FPS = not SHOW_FPS
+        if (event.type == pygame.MOUSEBUTTONDOWN):
+            if event.button == 1:
+                if mouse_down(event, screenindex):
+                    new_screen = True
+        if event.type == NEWSCREEN:
+            screenindex = event.value
+    if new_screen:
+        new_screen = False
+        continue
     screen.blit(pluginScreens[screenindex].showScreen(), (0,0))
     update_display()
 pygame.quit()
