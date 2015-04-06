@@ -33,7 +33,6 @@ class VirtualKeyboard():
         self.rect = self.screen.get_rect()
         w,h = self.rect.size
 
-
         self.keyW = int((w) / 4)
         self.keyH = int((h) / 5)
         self.x = (w - self.keyW * 4) / 2

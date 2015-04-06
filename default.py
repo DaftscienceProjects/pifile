@@ -106,18 +106,17 @@ def getScreens():
         showLoadedPlugin(loadedscreen)
 
     for plugin in plugins:
-        # pprint(plugin.color)
         keyboards.append(plugin.vkey)
     return plugins, keyboards
 
 
 loading_font = pygame.font.Font(FONTS['swipe_font']['path'], 18)
 
-def showWelcomeScreen():
-    '''Display a temporary screen to show it's working
-    May not display for long because of later code to show plugin loading
-    '''
-    pass
+# def showWelcomeScreen():
+    # '''Display a temporary screen to show it's working
+    # May not display for long because of later code to show plugin loading
+    # '''
+    # pass
     # screen.fill(COLORS['CLOUD'])
     # label = loading_font.render(
         # "Initialising screens...",
@@ -261,13 +260,13 @@ def mouse_down(event, index):
 
     if swype.last_swipe:
         print swype.last_swipe
-        accel = 1.3
+        accel = 1.6
         if swype.last_swipe == 'left':
             while delta_x < 319:
                 # print delta_x
                 screen.blit(left_screen, (-320+delta_x,0))
                 screen.blit(current_screen, (delta_x, 0))
-                delta_x += 20
+                delta_x *= accel
                 update_display()
             screenindex = left
         if swype.last_swipe == 'right':
@@ -275,15 +274,14 @@ def mouse_down(event, index):
                 print delta_x
                 screen.blit(right_screen, (320+delta_x,0))
                 screen.blit(current_screen, (delta_x, 0))
-                delta_x -= 20
+                delta_x *= accel
                 update_display()
             screenindex = right
         if swype.last_swipe == 'up':
-            while delta_y > -239:
+            while delta_y > - 239:
                 screen.blit(current_screen, (0, delta_y))
                 screen.blit(keyboard_screen, (0, 240+delta_y))
-                print delta_y
-                delta_y -= 10
+                delta_y *= accel
                 update_display()
             evnt = pygame.event.Event(SWIPE, value='up')
             pluginScreens[screenindex].event_handler(evnt)
