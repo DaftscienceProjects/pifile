@@ -33,14 +33,9 @@ class VirtualKeyboard():
         self.rect = self.screen.get_rect()
         w,h = self.rect.size
 
-        self.keyW = int((w) / 4)
-        self.keyH = int((h) / 5)
-        self.x = (w - self.keyW * 4) / 2
-        self.y = 0
-
         kw = int((w) / 4)
         kh = int((h) / 5)
-        kx = (w - self.keyW * 4) / 2
+        kx = (w - kw * 4) / 2
         ky = 0
         self.key_rect = pygame.Rect(kx, ky, kw, kh)
 
@@ -48,10 +43,10 @@ class VirtualKeyboard():
 
         self.fa = pygame.font.Font(
             ICONS.font_location, int(
-                self.keyH * 0.70))  # keyboard font
+                kh * 0.70))  # keyboard font
 
         self.textW = w  # + 4  # leave room for escape key
-        self.textH = self.keyH
+        self.textH = kh
         self.color = COLORS[color]
 
         self.caps = False
@@ -61,10 +56,10 @@ class VirtualKeyboard():
         self.input = TextInput(
             self.screen,
             '',
-            self.x,
-            self.y,
-            self.textW,
-            self.textH)
+            kx,
+            ky,
+            kw*4,
+            kh)
 
         self.validate = validate
         self.run(init=True)
@@ -176,7 +171,9 @@ class VirtualKeyboard():
                     result = self.special_keys[key.special]()
                     return result
                 elif self.caps:
-                    self.input.addcharatcursor(key.caption.translate(Uppercase))
+                    key = key.caption.translate(Uppercase)
+                    if key != ' ':
+                        self.input.addcharatcursor(key)
                 else:
                     self.input.addcharatcursor(key.caption)
         self.paintkeys()
@@ -253,7 +250,7 @@ class VirtualKeyboard():
         self.keys.append(key)
         self.key_rect.left = self.key_rect.right + 1
 
-        key = VKey('eraser', self.key_rect.copy(), self.keyFont, self.color)
+        key = VKey('eraser', self.key_rect.copy(), self.fa, self.color)
         self.keys.append(key)
 
         self.all_keys = pygame.sprite.Group()
@@ -428,27 +425,25 @@ class VKey(pygame.sprite.Sprite):
 
         if caption in special_keys:
             self.special = caption
-
-        else:
-            self.caption = caption
-        if caption == 'keyboard-return':
-            top = rect.top
-            rect.height *= 2
-            rect.top = top
-        self.rect = rect
-        self.image = pygame.Surface(self.rect.size)
-        
-        self.selected_color = color['100']
-        self.color = color['500']
-        font_color = COLORS['CLOUD']
-        if self.special:
             if caption == 'alphabetical':
                 shifted_text = ICONS.unicode('numeric')
             else:
                 shifted_text = ICONS.unicode(caption)
             caption = ICONS.unicode(caption)
         else:
+            self.caption = caption
             shifted_text = caption.translate(Uppercase)
+        
+        self.rect = rect
+        if self.special == 'keyboard-return':
+            top = rect.top
+            rect.height *= 2
+            rect.top = top
+        self.image = pygame.Surface(self.rect.size)
+        
+        self.selected_color = color['100']
+        self.color = color['500']
+        font_color = COLORS['CLOUD']
         self.text = font.render(caption, 1, font_color)
         self.shifted_text = font.render(shifted_text, 1,font_color)
 
