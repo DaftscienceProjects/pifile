@@ -152,6 +152,7 @@ COLORS = MATERIAL_COLORS
 
 DEBUG = _CONFIG['settings']['debug']
 FPS = _CONFIG['settings']['fps']
+ANIMATION_SPEED = ['settings']['animation_speed']
 LOADING_TIME = _CONFIG['settings']['loading_time']
 SHOW_FPS = False
 TOGGLE_FPS_EVENT = pygame.event.Event(TOGGLE_FPS, value=True)
