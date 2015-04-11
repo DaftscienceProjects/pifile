@@ -37,6 +37,7 @@ class myScreen(PiInfoScreen):
 
         self.shell_commands = {
             'backup': 'cp racks.sqlite racks.sqlite.bak',
+            'fetch': 'cp /home/pi/pifile/racks.sqlite racks.sqlite',
             'update': 'git pull',
             'restart': "sudo reboot -n"
         }
@@ -44,9 +45,15 @@ class myScreen(PiInfoScreen):
             'F1': self.clean_database,
             'F2': self.database_size,
             'F3': self.toggle_fps,
+            'F4': self.backup,
+            'F5': self.fetch_db,
             'F22': self.quit
         }
 
+    def self.backup(self):
+        subprocess.call(self.shell_commands['backup'], shell=True)
+    def self.fetch_db(self):
+        subprocess.call(self.shell_commands['fetch'], shell=True)
     def quit(self):
         pygame.quit()
 
