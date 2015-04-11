@@ -239,7 +239,8 @@ def mouse_down(event, index):
     current_screen = pluginScreens[screenindex].screen
     keyboard_screen = pluginScreens[screenindex].vkey_screen
 
-    while swype.is_down:
+    # while swype.is_down:
+    while pygame.mouse.get_pressed()[0]:
         for event in pygame.event.get():
             swype.event_handler(event)
         if not swype.is_down: continue
