@@ -243,6 +243,7 @@ def mouse_down(event, index):
         for event in pygame.event.get():
             swype.event_handler(event)
         if not swype.is_down: continue
+        print "Finishing swipe motion"
 
         delta_x, delta_y = swype.delta
         # delta_y = swype.y_delta
@@ -271,7 +272,7 @@ def mouse_down(event, index):
             screenindex = left
         if swype.last_swipe == 'right':
             while delta_x > - 319:
-                print delta_x
+                # print delta_x
                 screen.blit(right_screen, (320+delta_x,0))
                 screen.blit(current_screen, (delta_x, 0))
                 delta_x *= ANIMATION_SPEED
