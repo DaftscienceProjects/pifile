@@ -260,7 +260,8 @@ def mouse_down(event, index):
                 screen.blit(keyboard_screen, (0, 240+delta_y))
         update_display()
 
-    if swype.last_swipe:
+    # if swype.last_swipe:
+    else:
         print swype.last_swipe
         # accel = 1.6
         if swype.last_swipe == 'left':
