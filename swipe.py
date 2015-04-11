@@ -23,6 +23,7 @@ class swipe():
 		print "pressed"
 		self.down_pos = pygame.mouse.get_pos()
 		self.last_pos = pygame.mouse.get_pos()
+		self.delta = (0,0)
 		# self.last_swipe = None
 		self.is_down = True
 
@@ -31,7 +32,7 @@ class swipe():
 		self.up_pos = pygame.mouse.get_pos()
 		self.last_pos = None
 		self.is_down = False
-		self.delta = (0,0)
+		# self.delta = (0,0)
 
 	def get_delta(self):
 		new_pos = pygame.mouse.get_pos()
