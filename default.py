@@ -289,7 +289,9 @@ def mouse_down(event, index):
     return True if screenindex != index else False 
 
 def update_display(fps=None):
-    show_fps()
+    global SHOW_FPS
+    if SHOW_FPS:
+        show_fps()
     if fps:
         clock.tick(fps)
     else:
