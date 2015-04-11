@@ -17,13 +17,13 @@ class swipe():
 		self.mouse_down_time = None
 		self.delta = (0,0)
 		self.is_down = False
-		self.last_swipe = None
+		self.last_swipe = 'down'
 
 	def set_down(self):
 		print "pressed"
 		self.down_pos = pygame.mouse.get_pos()
 		self.last_pos = pygame.mouse.get_pos()
-		self.last_swipe = None
+		# self.last_swipe = None
 		self.is_down = True
 
 	def release(self):
