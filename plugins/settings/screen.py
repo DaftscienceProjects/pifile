@@ -50,9 +50,9 @@ class myScreen(PiInfoScreen):
             'F22': self.quit
         }
 
-    def self.backup(self):
+    def backup(self):
         subprocess.call(self.shell_commands['backup'], shell=True)
-    def self.fetch_db(self):
+    def fetch_db(self):
         subprocess.call(self.shell_commands['fetch'], shell=True)
     def quit(self):
         pygame.quit()
