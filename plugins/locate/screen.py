@@ -31,8 +31,8 @@ class myScreen(PiInfoScreen):
 
         self.timer = False
         self.timeout = 0
-        self.timeout_delay =  3 # in seconds
-        # self.timeout_delay =  SCREEN_TIMEOUT * 60 # in seconds
+        # self.timeout_delay =  3 # in seconds
+        self.timeout_delay =  SCREEN_TIMEOUT * 60 # in seconds
         self.new_result = False
         self.dirty = True
         self.timer_active = False
