@@ -238,14 +238,14 @@ def mouse_down(event, index):
     right_screen = pluginScreens[right].screen
     current_screen = pluginScreens[screenindex].screen
     keyboard_screen = pluginScreens[screenindex].vkey_screen
-
+    
+    last_swipe = None
     # while swype.is_down:
     while pygame.mouse.get_pressed()[0]:
         for event in pygame.event.get():
-            swype.event_handler(event)
-        if not swype.is_down: continue
+            last_swipe = swype.event_handler(event)
+        if not pygame.mouse.get_pressed()[0]: continue
         print "Finishing swipe motion"
-
         delta_x, delta_y = swype.delta
         # delta_y = swype.y_delta
         if abs(delta_x) > abs(delta_y):
@@ -262,9 +262,9 @@ def mouse_down(event, index):
 
     # if swype.last_swipe:
     else:
-        print swype.last_swipe
+        # print swype.last_swipe
         # accel = 1.6
-        if swype.last_swipe == 'left':
+        if last_swipe == 'left':
             while delta_x < 319:
                 # print delta_x
                 screen.blit(left_screen, (-320+delta_x,0))
@@ -272,7 +272,7 @@ def mouse_down(event, index):
                 delta_x *= ANIMATION_SPEED
                 update_display()
             screenindex = left
-        if swype.last_swipe == 'right':
+        if last_swipe == 'right':
             while delta_x > - 319:
                 # print delta_x
                 screen.blit(right_screen, (320+delta_x,0))
@@ -280,7 +280,7 @@ def mouse_down(event, index):
                 delta_x *= ANIMATION_SPEED
                 update_display()
             screenindex = right
-        if swype.last_swipe == 'up':
+        if last_swipe == 'up':
             while delta_y > - 239:
                 screen.blit(current_screen, (0, delta_y))
                 screen.blit(keyboard_screen, (0, 240+delta_y))
