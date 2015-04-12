@@ -19,7 +19,7 @@ special_keys = [
 
 clock = pygame.time.Clock()
 DEBUG = False
-swype = swipe()
+# swype = swipe()
 class VirtualKeyboard():
 
     ''' Implement a basic full screen virtual keyboard for touchscreens '''
@@ -111,9 +111,9 @@ class VirtualKeyboard():
                 self.togglecaps(force=False)
 
             for e in events:
-                if swype.event_handler(e) == 'down':
-                    self.input.text = ''
-                    return ''
+                # if swype.event_handler(e) == 'down':
+                    # self.input.text = ''
+                    # return ''
                 if (e.type == MOUSEBUTTONDOWN):
                     self.selectatmouse()
                 if (e.type == MOUSEBUTTONUP):
@@ -122,7 +122,9 @@ class VirtualKeyboard():
                         if self.input.text == '':
                             return self.input.text
                         if self.validate == False:
-                            return self.input.text
+                            tmp = self.input.text
+                            self.input.text = ''
+                            return tmp
                         if sunquest_fix(self.input.text) == None:
                             self.paintkeys()
                             temp = self.input.text
@@ -196,14 +198,14 @@ class VirtualKeyboard():
         pos = pygame.mouse.get_pos()
         if self.input.rect.collidepoint(pos):
             self.input.setcursor(pos)
-        else:
-            x,y = swype.delta
-            if abs(x) < 20 and abs(y) < 20:
-                for key in self.keys:
-                    if key.rect.collidepoint(pos):
-                        key.selected = True
-                        key.dirty = True
-                        break
+        # else:
+            # x,y = swype.delta
+            # if abs(x) < 20 and abs(y) < 20:
+                # for key in self.keys:
+                    # if key.rect.collidepoint(pos):
+                        # key.selected = True
+                        # key.dirty = True
+                        # break
         self.paintkeys()
 
     def addkeys(self):  # Add all the keys for the virtual keyboard

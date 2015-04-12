@@ -222,11 +222,11 @@ longPressTime = 200
 
 
 # Run our main loop
-swype = swipe()
+
 
 def mouse_down(event, index):
     screenindex = index
-    swype.event_handler(event)
+    swype = swipe()
     other_screen = 0
     delta_y = 0
     delta_x = 0
@@ -240,19 +240,10 @@ def mouse_down(event, index):
     keyboard_screen = pluginScreens[screenindex].vkey_screen
     
     last_swipe = None
-    # while swype.is_down:
     while pygame.mouse.get_pressed()[0]:
-        print pygame.mouse.get_pressed()
         for event in pygame.event.get():
-            try:
-                print event.event_name
-            except:
-                print event.type
-            
-            last_swipe = swype.event_handler(event)
-        if pygame.mouse.get_pressed()[0]: 
+            swype.get_delta()
             delta_x, delta_y = swype.delta
-            # delta_y = swype.y_delta
             if abs(delta_x) > abs(delta_y):
                 if delta_x > 0:
                     screen.blit(left_screen, (-320+delta_x,0))
@@ -264,11 +255,9 @@ def mouse_down(event, index):
                     screen.blit(current_screen, (0, delta_y))
                     screen.blit(keyboard_screen, (0, 240+delta_y))
             update_display()
-    # if swype.last_swipe:
     else:
-        # print swype.last_swipe
-        # accel = 1.6
-        if last_swipe == 'left':
+        swype.release()
+        if swype.last_swipe == 'left':
             while delta_x < 319:
                 # print delta_x
                 screen.blit(left_screen, (-320+delta_x,0))
@@ -276,7 +265,7 @@ def mouse_down(event, index):
                 delta_x *= ANIMATION_SPEED
                 update_display()
             screenindex = left
-        if last_swipe == 'right':
+        if swype.last_swipe == 'right':
             while delta_x > - 319:
                 # print delta_x
                 screen.blit(right_screen, (320+delta_x,0))
@@ -284,7 +273,7 @@ def mouse_down(event, index):
                 delta_x *= ANIMATION_SPEED
                 update_display()
             screenindex = right
-        if last_swipe == 'up':
+        if swype.last_swipe == 'up':
             while delta_y > - 239:
                 screen.blit(current_screen, (0, delta_y))
                 screen.blit(keyboard_screen, (0, 240+delta_y))

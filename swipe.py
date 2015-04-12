@@ -16,49 +16,39 @@ class swipe():
 		self.mouse_up = None
 		self.mouse_down_time = None
 		self.delta = (0,0)
-		self.is_down = False
+		self._pressed = False
 		self.last_swipe = 'down'
 
 	def set_down(self):
 		print "pressed"
+		self._pressed = True
+		self.delta = (0,0)
 		self.down_pos = pygame.mouse.get_pos()
 		self.last_pos = pygame.mouse.get_pos()
-		self.delta = (0,0)
-		self.is_down = True
 
 	def release(self):
 		print "Released"
+		self._pressed = False
 		self.up_pos = pygame.mouse.get_pos()
 		self.last_pos = None
-		self.is_down = False
 		self.swipe()
-		# self.delta = (0,0)
 
 	def get_delta(self):
-		new_pos = pygame.mouse.get_pos()
-		x_down, y_down = self.last_pos
-		x_new, y_new = new_pos
-		x = x_new - x_down
-		y = y_new - y_down
-		self.delta = (x,y)
-		# self.y_delta = y
-		# print x
-
-	def event_handler(self, event):
-		# pprint(event)
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			if event.button == 1:
-				self.set_down()
-				return False
-		if self.is_down:
-			if event.type == pygame.MOUSEBUTTONUP:
-				self.release()
-				return self.last_swipe
-			else:
-				self.get_delta()
-		return False
+		if not self._pressed:
+			self.set_down()
+		else:
+			new_pos = pygame.mouse.get_pos()
+			# if self.last_pos
+			x_down, y_down = self.last_pos
+			x_new, y_new = new_pos
+			x = x_new - x_down
+			y = y_new - y_down
+			self.delta = (x,y)
 
 	def swipe(self):
+		print "swipe"
+		if not self.down_pos:
+			return
 		x_down, y_down = self.down_pos
 		x_up, y_up = self.up_pos
 		x = x_up - x_down
