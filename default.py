@@ -242,6 +242,7 @@ def mouse_down(event, index):
     last_swipe = None
     # while swype.is_down:
     while pygame.mouse.get_pressed()[0]:
+        print pygame.mouse.get_pressed()
         for event in pygame.event.get():
             try:
                 print event.event_name
