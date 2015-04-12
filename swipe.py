@@ -42,7 +42,7 @@ class swipe():
 		y = y_new - y_down
 		self.delta = (x,y)
 		# self.y_delta = y
-		print x
+		# print x
 
 	def event_handler(self, event):
 		# pprint(event)
