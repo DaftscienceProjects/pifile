@@ -51,7 +51,7 @@ class swipe():
 				self.set_down()
 				return False
 		if self.is_down:
-			if event.type == pygame.MOUSEBUTTONUP
+			if event.type == pygame.MOUSEBUTTONUP:
 				self.release()
 				return self.last_swipe()
 			else:
