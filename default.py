@@ -243,7 +243,7 @@ def mouse_down(event, index):
     # while swype.is_down:
     while pygame.mouse.get_pressed()[0]:
         for event in pygame.event.get():
-            print event.type
+            print event.event_name
             last_swipe = swype.event_handler(event)
         if not pygame.mouse.get_pressed()[0]: continue
         print "Finishing swipe motion"
@@ -314,10 +314,9 @@ while not quit:
             quit = True
         if event.type == piscreenevents['toggle_fps'].type:
             SHOW_FPS = not SHOW_FPS
-        if (event.type == pygame.MOUSEBUTTONDOWN):
-            if event.button == 1:
-                if mouse_down(event, screenindex):
-                    new_screen = True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if mouse_down(event, screenindex):
+                new_screen = True
         if event.type == NEWSCREEN:
             screenindex = event.value
     if new_screen:
