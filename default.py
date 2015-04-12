@@ -250,22 +250,20 @@ def mouse_down(event, index):
                 print event.type
             
             last_swipe = swype.event_handler(event)
-        if not pygame.mouse.get_pressed()[0]: continue
-        print "Finishing swipe motion"
-        delta_x, delta_y = swype.delta
-        # delta_y = swype.y_delta
-        if abs(delta_x) > abs(delta_y):
-            if delta_x > 0:
-                screen.blit(left_screen, (-320+delta_x,0))
-            else:
-                screen.blit(right_screen, (320+delta_x,0))
-            screen.blit(current_screen, (delta_x, 0))
-        elif abs(delta_x) < abs(delta_y):
-            if delta_y < 0:
-                screen.blit(current_screen, (0, delta_y))
-                screen.blit(keyboard_screen, (0, 240+delta_y))
-        update_display()
-
+        if pygame.mouse.get_pressed()[0]: 
+            delta_x, delta_y = swype.delta
+            # delta_y = swype.y_delta
+            if abs(delta_x) > abs(delta_y):
+                if delta_x > 0:
+                    screen.blit(left_screen, (-320+delta_x,0))
+                else:
+                    screen.blit(right_screen, (320+delta_x,0))
+                screen.blit(current_screen, (delta_x, 0))
+            elif abs(delta_x) < abs(delta_y):
+                if delta_y < 0:
+                    screen.blit(current_screen, (0, delta_y))
+                    screen.blit(keyboard_screen, (0, 240+delta_y))
+            update_display()
     # if swype.last_swipe:
     else:
         # print swype.last_swipe
