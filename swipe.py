@@ -53,7 +53,7 @@ class swipe():
 		if self.is_down:
 			if event.type == pygame.MOUSEBUTTONUP:
 				self.release()
-				return self.last_swipe()
+				return self.last_swipe
 			else:
 				self.get_delta()
 		return False
